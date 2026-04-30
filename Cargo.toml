@@ -1,0 +1,23 @@
+[package]
+name = "satint"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85.1"
+description = "Saturating integer scalar wrappers for no_std Rust"
+readme = "README.md"
+repository = "https://github.com/Jmgr/safe_scalars"
+license = "MIT OR Apache-2.0"
+keywords = ["saturating", "integer", "arithmetic", "scalar", "no-std"]
+categories = ["no-std", "no-std::no-alloc", "mathematics"]
+resolver = "2"
+
+[features]
+default = []
+serde = ["dep:serde"]
+
+[dependencies]
+serde = { version = "1.0", default-features = false, optional = true }
+
+[dev-dependencies]
+rstest = "0.26.1"
+serde_test = "1.0"
