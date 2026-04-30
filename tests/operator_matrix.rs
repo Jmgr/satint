@@ -1,7 +1,7 @@
 use rstest::rstest;
 use satint::{
-    Si8, Si16, Si32, Si64, Si128, Su8, Su16, Su32, Su64, Su128, si8, si16, si32, si64, si128, su8,
-    su16, su32, su64, su128,
+    SaturatingFrom, SaturatingInto, Si8, Si16, Si32, Si64, Si128, Su8, Su16, Su32, Su64, Su128,
+    si8, si16, si32, si64, si128, su8, su16, su32, su64, su128,
 };
 
 macro_rules! unsigned_operator_tests {
@@ -135,6 +135,25 @@ macro_rules! unsigned_operator_tests {
                 assert_eq!($ctor(20).checked_rem($ctor(3)), Some($ctor(2)));
                 assert_eq!($ctor(20).checked_div($ctor(0)), None);
                 assert_eq!($ctor(20).checked_rem($ctor(0)), None);
+            }
+
+            #[test]
+            fn primitive_saturating_conversions() {
+                let same_width: $scalar = (42 as $primitive).saturating_into();
+                let from_isize: $scalar = 42_isize.saturating_into();
+                let from_usize: $scalar = 42_usize.saturating_into();
+                let negative: $scalar = (-10_i32).saturating_into();
+                let wide: $scalar = u128::MAX.saturating_into();
+
+                assert_eq!(same_width, $ctor(42 as $primitive));
+                assert_eq!(from_isize, $ctor(42 as $primitive));
+                assert_eq!(from_usize, $ctor(42 as $primitive));
+                assert_eq!(negative, <$scalar>::ZERO);
+                assert_eq!(wide, <$scalar>::MAX);
+                assert_eq!(
+                    <$scalar>::saturating_from(42 as $primitive),
+                    $ctor(42 as $primitive)
+                );
             }
         }
     };
@@ -281,6 +300,25 @@ macro_rules! signed_operator_tests {
             fn neg() {
                 assert_eq!(-$ctor(5), $ctor(-5));
                 assert_eq!(-<$scalar>::MIN, <$scalar>::MAX);
+            }
+
+            #[test]
+            fn primitive_saturating_conversions() {
+                let same_width: $scalar = (42 as $primitive).saturating_into();
+                let from_isize: $scalar = 42_isize.saturating_into();
+                let from_usize: $scalar = 42_usize.saturating_into();
+                let low: $scalar = i128::MIN.saturating_into();
+                let high: $scalar = u128::MAX.saturating_into();
+
+                assert_eq!(same_width, $ctor(42 as $primitive));
+                assert_eq!(from_isize, $ctor(42 as $primitive));
+                assert_eq!(from_usize, $ctor(42 as $primitive));
+                assert_eq!(low, <$scalar>::MIN);
+                assert_eq!(high, <$scalar>::MAX);
+                assert_eq!(
+                    <$scalar>::saturating_from(42 as $primitive),
+                    $ctor(42 as $primitive)
+                );
             }
         }
     };

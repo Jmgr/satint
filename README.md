@@ -126,6 +126,18 @@ let value: Su8 = su16(999).saturating_into();
 assert_eq!(value.into_inner(), u8::MAX);
 ```
 
+Primitive integers can also be used as the source:
+
+```rust
+use satint::{SaturatingInto, Si32, Su32};
+
+let signed: Si32 = 42_i32.saturating_into();
+let unsigned: Su32 = 42_i32.saturating_into();
+
+assert_eq!(signed.into_inner(), 42);
+assert_eq!(unsigned.into_inner(), 42);
+```
+
 ## Widening Arithmetic
 
 Same-sign wider-left-hand-side `+` and `-` are supported when the right-hand

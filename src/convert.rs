@@ -40,6 +40,109 @@ impl<T> SaturatingFrom<T> for T {
     }
 }
 
+// -- Primitive → wrapper conversions --------------------------------------
+
+macro_rules! impl_primitive_unsigned_to_su {
+    ($($src:ty => $dst:ty),+ $(,)?) => {$(
+        impl SaturatingFrom<$src> for Su<$dst> {
+            #[inline]
+            fn saturating_from(value: $src) -> Self {
+                if (value as u128) > (<$dst>::MAX as u128) {
+                    Self::new(<$dst>::MAX)
+                } else {
+                    Self::new(value as $dst)
+                }
+            }
+        }
+    )+};
+}
+
+macro_rules! impl_primitive_signed_to_su {
+    ($($src:ty => $dst:ty),+ $(,)?) => {$(
+        impl SaturatingFrom<$src> for Su<$dst> {
+            #[inline]
+            fn saturating_from(value: $src) -> Self {
+                if value <= 0 {
+                    Self::new(0)
+                } else if (value as u128) > (<$dst>::MAX as u128) {
+                    Self::new(<$dst>::MAX)
+                } else {
+                    Self::new(value as $dst)
+                }
+            }
+        }
+    )+};
+}
+
+macro_rules! impl_primitive_signed_to_si {
+    ($($src:ty => $dst:ty),+ $(,)?) => {$(
+        impl SaturatingFrom<$src> for Si<$dst> {
+            #[inline]
+            fn saturating_from(value: $src) -> Self {
+                let v = value as i128;
+                if v > (<$dst>::MAX as i128) {
+                    Self::new(<$dst>::MAX)
+                } else if v < (<$dst>::MIN as i128) {
+                    Self::new(<$dst>::MIN)
+                } else {
+                    Self::new(value as $dst)
+                }
+            }
+        }
+    )+};
+}
+
+macro_rules! impl_primitive_unsigned_to_si {
+    ($($src:ty => $dst:ty),+ $(,)?) => {$(
+        impl SaturatingFrom<$src> for Si<$dst> {
+            #[inline]
+            fn saturating_from(value: $src) -> Self {
+                if (value as u128) > (<$dst>::MAX as u128) {
+                    Self::new(<$dst>::MAX)
+                } else {
+                    Self::new(value as $dst)
+                }
+            }
+        }
+    )+};
+}
+
+macro_rules! impl_primitive_to_su {
+    ($dst:ty) => {
+        impl_primitive_unsigned_to_su! {
+            u8 => $dst, u16 => $dst, u32 => $dst, u64 => $dst, u128 => $dst, usize => $dst,
+        }
+
+        impl_primitive_signed_to_su! {
+            i8 => $dst, i16 => $dst, i32 => $dst, i64 => $dst, i128 => $dst, isize => $dst,
+        }
+    };
+}
+
+macro_rules! impl_primitive_to_si {
+    ($dst:ty) => {
+        impl_primitive_signed_to_si! {
+            i8 => $dst, i16 => $dst, i32 => $dst, i64 => $dst, i128 => $dst, isize => $dst,
+        }
+
+        impl_primitive_unsigned_to_si! {
+            u8 => $dst, u16 => $dst, u32 => $dst, u64 => $dst, u128 => $dst, usize => $dst,
+        }
+    };
+}
+
+impl_primitive_to_su!(u8);
+impl_primitive_to_su!(u16);
+impl_primitive_to_su!(u32);
+impl_primitive_to_su!(u64);
+impl_primitive_to_su!(u128);
+
+impl_primitive_to_si!(i8);
+impl_primitive_to_si!(i16);
+impl_primitive_to_si!(i32);
+impl_primitive_to_si!(i64);
+impl_primitive_to_si!(i128);
+
 // -- Widening arithmetic --------------------------------------------------
 //
 // `Su<wider> + Su<narrower>` and `Si<wider> + Si<narrower>` (and Sub) — only
