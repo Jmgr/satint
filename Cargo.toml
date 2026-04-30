@@ -9,6 +9,7 @@ repository = "https://github.com/Jmgr/safe_scalars"
 license = "MIT OR Apache-2.0"
 keywords = ["saturating", "integer", "arithmetic", "scalar", "no-std"]
 categories = ["no-std", "no-std::no-alloc", "mathematics"]
+exclude = [".github/**", ".gitignore"]
 resolver = "2"
 
 [features]
