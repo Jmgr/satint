@@ -1,3 +1,8 @@
+## [0.1.2] - 2026-04-30
+
+### 🚀 Features
+
+- Add SaturatingFrom for primitives
 ## [0.1.1] - 2026-04-30
 
 ### 🚀 Features
@@ -7,6 +12,11 @@
 ### 🐛 Bug Fixes
 
 - Update repository in Cargo.toml
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog
+- Update version
 ## [0.1.0] - 2026-04-30
 
 ### 🚀 Features
