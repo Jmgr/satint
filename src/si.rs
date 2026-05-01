@@ -1,5 +1,7 @@
 //! Signed saturating scalar aliases and constructors.
 
+use core::{num::Saturating, ops::Neg};
+
 use crate::{define_wrapper, scalars};
 
 define_wrapper!(Si);
@@ -12,9 +14,9 @@ scalars! {
     Si, Si128, si128, i128;
 }
 
-impl<T> core::ops::Neg for Si<T>
+impl<T> Neg for Si<T>
 where
-    core::num::Saturating<T>: core::ops::Neg<Output = core::num::Saturating<T>>,
+    Saturating<T>: Neg<Output = Saturating<T>>,
 {
     type Output = Self;
 

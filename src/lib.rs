@@ -18,6 +18,86 @@ pub use convert::{SaturatingFrom, SaturatingInto};
 pub use si::{Si, Si8, Si16, Si32, Si64, Si128, si8, si16, si32, si64, si128};
 pub use su::{Su, Su8, Su16, Su32, Su64, Su128, su8, su16, su32, su64, su128};
 
+/// Error returned by fallible division and remainder operations.
+#[expect(
+    clippy::exhaustive_enums,
+    reason = "division failures are limited to zero divisors and primitive overflow"
+)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DivError {
+    /// The divisor was zero.
+    DivisionByZero,
+    /// The operation overflowed. Only reachable for signed types, where
+    /// `MIN / -1` and `MIN % -1` exceed the representable range.
+    Overflow,
+}
+
+impl core::fmt::Display for DivError {
+    #[inline]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match *self {
+            Self::DivisionByZero => f.write_str("division by zero"),
+            Self::Overflow => f.write_str("arithmetic overflow"),
+        }
+    }
+}
+
+impl core::error::Error for DivError {}
+
+/// Fallible division that distinguishes division by zero from overflow.
+pub trait TryDiv<Rhs = Self> {
+    /// Result type produced by the division.
+    type Output;
+
+    /// Divides `self` by `rhs`.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`DivError::DivisionByZero`] when `rhs` is zero and
+    /// [`DivError::Overflow`] when the primitive operation overflows.
+    fn try_div(self, rhs: Rhs) -> Result<Self::Output, DivError>;
+}
+
+/// Fallible remainder that distinguishes division by zero from overflow.
+pub trait TryRem<Rhs = Self> {
+    /// Result type produced by the remainder operation.
+    type Output;
+
+    /// Calculates `self % rhs`.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`DivError::DivisionByZero`] when `rhs` is zero and
+    /// [`DivError::Overflow`] when the primitive operation overflows.
+    fn try_rem(self, rhs: Rhs) -> Result<Self::Output, DivError>;
+}
+
+/// Fallible division assignment.
+pub trait TryDivAssign<Rhs = Self> {
+    /// Divides `self` by `rhs` in place.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`DivError::DivisionByZero`] when `rhs` is zero and
+    /// [`DivError::Overflow`] when the primitive operation overflows.
+    ///
+    /// Leaves `self` unchanged if the operation fails.
+    fn try_div_assign(&mut self, rhs: Rhs) -> Result<(), DivError>;
+}
+
+/// Fallible remainder assignment.
+pub trait TryRemAssign<Rhs = Self> {
+    /// Calculates `*self %= rhs` in place.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`DivError::DivisionByZero`] when `rhs` is zero and
+    /// [`DivError::Overflow`] when the primitive operation overflows.
+    ///
+    /// Leaves `self` unchanged if the operation fails.
+    fn try_rem_assign(&mut self, rhs: Rhs) -> Result<(), DivError>;
+}
+
 macro_rules! define_wrapper {
     ($wrapper:ident) => {
         /// A saturating scalar wrapper around a primitive integer type.
@@ -243,6 +323,86 @@ macro_rules! scalars {
                         Some(v) => Some($ctor(v)),
                         None => None,
                     }
+                }
+            }
+
+            impl $crate::TryDiv for $alias {
+                type Output = Self;
+
+                #[inline]
+                fn try_div(self, rhs: Self) -> Result<Self::Output, $crate::DivError> {
+                    if rhs == Self::ZERO {
+                        return Err($crate::DivError::DivisionByZero);
+                    }
+
+                    self.checked_div(rhs).ok_or($crate::DivError::Overflow)
+                }
+            }
+
+            impl $crate::TryDiv<$primitive> for $alias {
+                type Output = Self;
+
+                #[inline]
+                fn try_div(self, rhs: $primitive) -> Result<Self::Output, $crate::DivError> {
+                    if rhs == 0 {
+                        return Err($crate::DivError::DivisionByZero);
+                    }
+
+                    self.checked_div($ctor(rhs)).ok_or($crate::DivError::Overflow)
+                }
+            }
+
+            impl $crate::TryRem for $alias {
+                type Output = Self;
+
+                #[inline]
+                fn try_rem(self, rhs: Self) -> Result<Self::Output, $crate::DivError> {
+                    if rhs == Self::ZERO {
+                        return Err($crate::DivError::DivisionByZero);
+                    }
+
+                    self.checked_rem(rhs).ok_or($crate::DivError::Overflow)
+                }
+            }
+
+            impl $crate::TryRem<$primitive> for $alias {
+                type Output = Self;
+
+                #[inline]
+                fn try_rem(self, rhs: $primitive) -> Result<Self::Output, $crate::DivError> {
+                    if rhs == 0 {
+                        return Err($crate::DivError::DivisionByZero);
+                    }
+
+                    self.checked_rem($ctor(rhs)).ok_or($crate::DivError::Overflow)
+                }
+            }
+
+            impl $crate::TryDivAssign for $alias {
+                #[inline]
+                fn try_div_assign(&mut self, rhs: Self) -> Result<(), $crate::DivError> {
+                    $crate::TryDiv::try_div(*self, rhs).map(|value| *self = value)
+                }
+            }
+
+            impl $crate::TryDivAssign<$primitive> for $alias {
+                #[inline]
+                fn try_div_assign(&mut self, rhs: $primitive) -> Result<(), $crate::DivError> {
+                    $crate::TryDiv::try_div(*self, rhs).map(|value| *self = value)
+                }
+            }
+
+            impl $crate::TryRemAssign for $alias {
+                #[inline]
+                fn try_rem_assign(&mut self, rhs: Self) -> Result<(), $crate::DivError> {
+                    $crate::TryRem::try_rem(*self, rhs).map(|value| *self = value)
+                }
+            }
+
+            impl $crate::TryRemAssign<$primitive> for $alias {
+                #[inline]
+                fn try_rem_assign(&mut self, rhs: $primitive) -> Result<(), $crate::DivError> {
+                    $crate::TryRem::try_rem(*self, rhs).map(|value| *self = value)
                 }
             }
 

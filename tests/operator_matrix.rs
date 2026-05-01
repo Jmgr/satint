@@ -1,7 +1,8 @@
 use rstest::rstest;
 use satint::{
-    SaturatingFrom, SaturatingInto, Si8, Si16, Si32, Si64, Si128, Su8, Su16, Su32, Su64, Su128,
-    si8, si16, si32, si64, si128, su8, su16, su32, su64, su128,
+    DivError, SaturatingFrom, SaturatingInto, Si8, Si16, Si32, Si64, Si128, Su8, Su16, Su32, Su64,
+    Su128, TryDiv, TryDivAssign, TryRem, TryRemAssign, si8, si16, si32, si64, si128, su8, su16,
+    su32, su64, su128,
 };
 use std::cmp::Ordering;
 
@@ -136,6 +137,92 @@ macro_rules! unsigned_operator_tests {
                 assert_eq!($ctor(20).checked_rem($ctor(3)), Some($ctor(2)));
                 assert_eq!($ctor(20).checked_div($ctor(0)), None);
                 assert_eq!($ctor(20).checked_rem($ctor(0)), None);
+            }
+
+            #[test]
+            fn try_div_wrapper_rhs() {
+                assert_eq!($ctor(20).try_div($ctor(3)), Ok($ctor(6)));
+                assert_eq!($ctor(20).try_div($ctor(0)), Err(DivError::DivisionByZero));
+            }
+
+            #[test]
+            fn try_rem_wrapper_rhs() {
+                assert_eq!($ctor(20).try_rem($ctor(3)), Ok($ctor(2)));
+                assert_eq!($ctor(20).try_rem($ctor(0)), Err(DivError::DivisionByZero));
+            }
+
+            #[test]
+            fn try_div_primitive_rhs() {
+                assert_eq!($ctor(20).try_div(3 as $primitive), Ok($ctor(6)));
+                assert_eq!(
+                    $ctor(20).try_div(0 as $primitive),
+                    Err(DivError::DivisionByZero)
+                );
+            }
+
+            #[test]
+            fn try_rem_primitive_rhs() {
+                assert_eq!($ctor(20).try_rem(3 as $primitive), Ok($ctor(2)));
+                assert_eq!(
+                    $ctor(20).try_rem(0 as $primitive),
+                    Err(DivError::DivisionByZero)
+                );
+            }
+
+            #[test]
+            fn try_div_assign_wrapper_rhs() {
+                let mut div = $ctor(20);
+                assert_eq!(div.try_div_assign($ctor(3)), Ok(()));
+                assert_eq!(div, $ctor(6));
+
+                let mut div_by_zero = $ctor(20);
+                assert_eq!(
+                    div_by_zero.try_div_assign($ctor(0)),
+                    Err(DivError::DivisionByZero)
+                );
+                assert_eq!(div_by_zero, $ctor(20));
+            }
+
+            #[test]
+            fn try_rem_assign_wrapper_rhs() {
+                let mut rem = $ctor(20);
+                assert_eq!(rem.try_rem_assign($ctor(3)), Ok(()));
+                assert_eq!(rem, $ctor(2));
+
+                let mut rem_by_zero = $ctor(20);
+                assert_eq!(
+                    rem_by_zero.try_rem_assign($ctor(0)),
+                    Err(DivError::DivisionByZero)
+                );
+                assert_eq!(rem_by_zero, $ctor(20));
+            }
+
+            #[test]
+            fn try_div_assign_primitive_rhs() {
+                let mut div = $ctor(20);
+                assert_eq!(div.try_div_assign(3 as $primitive), Ok(()));
+                assert_eq!(div, $ctor(6));
+
+                let mut div_by_zero = $ctor(20);
+                assert_eq!(
+                    div_by_zero.try_div_assign(0 as $primitive),
+                    Err(DivError::DivisionByZero)
+                );
+                assert_eq!(div_by_zero, $ctor(20));
+            }
+
+            #[test]
+            fn try_rem_assign_primitive_rhs() {
+                let mut rem = $ctor(20);
+                assert_eq!(rem.try_rem_assign(3 as $primitive), Ok(()));
+                assert_eq!(rem, $ctor(2));
+
+                let mut rem_by_zero = $ctor(20);
+                assert_eq!(
+                    rem_by_zero.try_rem_assign(0 as $primitive),
+                    Err(DivError::DivisionByZero)
+                );
+                assert_eq!(rem_by_zero, $ctor(20));
             }
 
             #[test]
@@ -340,6 +427,130 @@ macro_rules! signed_operator_tests {
                 assert_eq!($ctor(20).checked_rem($ctor(0)), None);
                 assert_eq!(<$scalar>::MIN.checked_div($ctor(-1)), None);
                 assert_eq!(<$scalar>::MIN.checked_rem($ctor(-1)), None);
+            }
+
+            #[test]
+            fn try_div_wrapper_rhs() {
+                assert_eq!($ctor(20).try_div($ctor(3)), Ok($ctor(6)));
+                assert_eq!($ctor(20).try_div($ctor(0)), Err(DivError::DivisionByZero));
+                assert_eq!(<$scalar>::MIN.try_div($ctor(-1)), Err(DivError::Overflow));
+            }
+
+            #[test]
+            fn try_rem_wrapper_rhs() {
+                assert_eq!($ctor(20).try_rem($ctor(3)), Ok($ctor(2)));
+                assert_eq!($ctor(20).try_rem($ctor(0)), Err(DivError::DivisionByZero));
+                assert_eq!(<$scalar>::MIN.try_rem($ctor(-1)), Err(DivError::Overflow));
+            }
+
+            #[test]
+            fn try_div_primitive_rhs() {
+                assert_eq!($ctor(20).try_div(3 as $primitive), Ok($ctor(6)));
+                assert_eq!(
+                    $ctor(20).try_div(0 as $primitive),
+                    Err(DivError::DivisionByZero)
+                );
+                assert_eq!(
+                    <$scalar>::MIN.try_div(-1 as $primitive),
+                    Err(DivError::Overflow)
+                );
+            }
+
+            #[test]
+            fn try_rem_primitive_rhs() {
+                assert_eq!($ctor(20).try_rem(3 as $primitive), Ok($ctor(2)));
+                assert_eq!(
+                    $ctor(20).try_rem(0 as $primitive),
+                    Err(DivError::DivisionByZero)
+                );
+                assert_eq!(
+                    <$scalar>::MIN.try_rem(-1 as $primitive),
+                    Err(DivError::Overflow)
+                );
+            }
+
+            #[test]
+            fn try_div_assign_wrapper_rhs() {
+                let mut div = $ctor(20);
+                assert_eq!(div.try_div_assign($ctor(3)), Ok(()));
+                assert_eq!(div, $ctor(6));
+
+                let mut div_by_zero = $ctor(20);
+                assert_eq!(
+                    div_by_zero.try_div_assign($ctor(0)),
+                    Err(DivError::DivisionByZero)
+                );
+                assert_eq!(div_by_zero, $ctor(20));
+
+                let mut div_overflow = <$scalar>::MIN;
+                assert_eq!(
+                    div_overflow.try_div_assign($ctor(-1)),
+                    Err(DivError::Overflow)
+                );
+                assert_eq!(div_overflow, <$scalar>::MIN);
+            }
+
+            #[test]
+            fn try_rem_assign_wrapper_rhs() {
+                let mut rem = $ctor(20);
+                assert_eq!(rem.try_rem_assign($ctor(3)), Ok(()));
+                assert_eq!(rem, $ctor(2));
+
+                let mut rem_by_zero = $ctor(20);
+                assert_eq!(
+                    rem_by_zero.try_rem_assign($ctor(0)),
+                    Err(DivError::DivisionByZero)
+                );
+                assert_eq!(rem_by_zero, $ctor(20));
+
+                let mut rem_overflow = <$scalar>::MIN;
+                assert_eq!(
+                    rem_overflow.try_rem_assign($ctor(-1)),
+                    Err(DivError::Overflow)
+                );
+                assert_eq!(rem_overflow, <$scalar>::MIN);
+            }
+
+            #[test]
+            fn try_div_assign_primitive_rhs() {
+                let mut div = $ctor(20);
+                assert_eq!(div.try_div_assign(3 as $primitive), Ok(()));
+                assert_eq!(div, $ctor(6));
+
+                let mut div_by_zero = $ctor(20);
+                assert_eq!(
+                    div_by_zero.try_div_assign(0 as $primitive),
+                    Err(DivError::DivisionByZero)
+                );
+                assert_eq!(div_by_zero, $ctor(20));
+
+                let mut div_overflow = <$scalar>::MIN;
+                assert_eq!(
+                    div_overflow.try_div_assign(-1 as $primitive),
+                    Err(DivError::Overflow)
+                );
+                assert_eq!(div_overflow, <$scalar>::MIN);
+            }
+
+            #[test]
+            fn try_rem_assign_primitive_rhs() {
+                let mut rem = $ctor(20);
+                assert_eq!(rem.try_rem_assign(3 as $primitive), Ok(()));
+                assert_eq!(rem, $ctor(2));
+
+                let mut rem_by_zero = $ctor(20);
+                assert_eq!(
+                    rem_by_zero.try_rem_assign(0 as $primitive),
+                    Err(DivError::DivisionByZero)
+                );
+                assert_eq!(rem_by_zero, $ctor(20));
+
+                let mut rem_overflow = <$scalar>::MIN;
+                assert_eq!(
+                    rem_overflow.try_rem_assign(-1 as $primitive),
+                    Err(DivError::Overflow)
+                );
+                assert_eq!(rem_overflow, <$scalar>::MIN);
             }
 
             #[test]
@@ -567,3 +778,11 @@ unsigned_narrowing_conversion_tests!(su16_su8_narrowing, Su16, su16, Su8, su8);
 signed_narrowing_conversion_tests!(si16_si8_narrowing, Si16, si16, Si8, si8);
 signed_to_unsigned_conversion_tests!(si16_su8_fallible, Si16, si16, Su8, su8);
 unsigned_to_signed_fallible_conversion_tests!(su16_si8_fallible, Su16, su16, Si8, si8);
+
+#[test]
+fn div_error_display_and_error_trait() {
+    assert_eq!(format!("{}", DivError::DivisionByZero), "division by zero");
+    assert_eq!(format!("{}", DivError::Overflow), "arithmetic overflow");
+    let err: &dyn core::error::Error = &DivError::DivisionByZero;
+    assert_eq!(format!("{err}"), "division by zero");
+}
