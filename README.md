@@ -207,4 +207,4 @@ clamping (`SaturatingFrom` / `SaturatingInto`). The crate is also
 
 ## License
 
-Licensed under the MIT or the Apache license.
+Licensed under either of MIT or Apache-2.0, at your option.
