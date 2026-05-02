@@ -10,6 +10,42 @@ env:
   RUSTFLAGS: -D warnings
 
 jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets --no-default-features
+      - run: cargo clippy --all-targets --all-features
+
+  docs:
+    name: docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo doc --all-features --no-deps
+        env:
+          RUSTDOCFLAGS: -D warnings
+
+  msrv:
+    name: msrv
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@cargo-msrv
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: msrv
+      - run: cargo msrv --no-log verify -- cargo check --all-targets --all-features
+
   test:
     name: test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -23,6 +59,16 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo test --no-default-features
       - run: cargo test --all-features
+
+  coverage:
+    name: coverage (tarpaulin)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@cargo-tarpaulin
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo tarpaulin --engine Llvm --all-features --fail-under 100
 
   no_std:
     name: build (${{ matrix.target }})

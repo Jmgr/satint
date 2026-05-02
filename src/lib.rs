@@ -47,8 +47,8 @@ impl core::error::Error for DivError {}
 
 /// Error returned by fallible float-to-integer conversions.
 ///
-/// Produced by `TryFrom<f32>` / `TryFrom<f64>` impls for [`Si`](si::Si) and
-/// [`Su`](su::Su) when the source value is `NaN`, infinite, or finite but
+/// Produced by `TryFrom<f32>` / `TryFrom<f64>` impls for [`Si`] and
+/// [`Su`] when the source value is `NaN`, infinite, or finite but
 /// outside the destination integer's representable range.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct TryFromFloatError(pub(crate) ());
