@@ -1,3 +1,12 @@
+## [0.2.0] - 2026-05-02
+
+### 🚀 Features
+
+- Rename to_(un)signed_saturating into to_(un)signed
+
+### ⚙️ Miscellaneous Tasks
+
+- Update version
 ## [0.1.5] - 2026-05-02
 
 ### 🚀 Features
@@ -7,6 +16,7 @@
 ### ⚙️ Miscellaneous Tasks
 
 - Update version
+- Update changelog
 ## [0.1.4] - 2026-05-02
 
 ### 🚀 Features
