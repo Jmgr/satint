@@ -119,6 +119,19 @@ let value: Su8 = su16(999).saturating_into();
 assert_eq!(value.into_inner(), u8::MAX);
 ```
 
+Same-width signedness flips have shorthand inherent methods that forward to the
+saturating conversions above:
+
+```rust
+use satint::{Si32, Su32, si32, su32};
+
+assert_eq!(su32(42).to_signed_saturating(), si32(42));
+assert_eq!(Su32::MAX.to_signed_saturating(), Si32::MAX);
+
+assert_eq!(si32(42).to_unsigned_saturating(), su32(42));
+assert_eq!(si32(-1).to_unsigned_saturating(), Su32::ZERO);
+```
+
 Primitive integers can also be used as the source:
 
 ```rust

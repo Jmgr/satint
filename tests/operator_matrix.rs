@@ -979,13 +979,73 @@ fn lossless_int_to_float() {
 #[test]
 fn try_from_float_error_traits() {
     let err = TryFromFloatError::default();
-    assert_eq!(format!("{err}"), "out of range float type conversion attempted");
+    assert_eq!(
+        format!("{err}"),
+        "out of range float type conversion attempted"
+    );
     assert_eq!(format!("{err:?}"), "TryFromFloatError(())");
     let trait_err: &dyn core::error::Error = &err;
-    assert_eq!(format!("{trait_err}"), "out of range float type conversion attempted");
+    assert_eq!(
+        format!("{trait_err}"),
+        "out of range float type conversion attempted"
+    );
     let cloned = err;
     assert_eq!(cloned, err);
 }
+
+macro_rules! same_width_signedness_tests {
+    (
+        $module:ident,
+        $unsigned:ty, $u_ctor:ident, $u_prim:ty,
+        $signed:ty, $s_ctor:ident, $s_prim:ty
+    ) => {
+        mod $module {
+            use super::*;
+
+            #[test]
+            fn unsigned_to_signed_in_range() {
+                assert_eq!(
+                    $u_ctor(42 as $u_prim).to_signed_saturating(),
+                    $s_ctor(42 as $s_prim),
+                );
+                assert_eq!(<$unsigned>::ZERO.to_signed_saturating(), <$signed>::ZERO,);
+            }
+
+            #[test]
+            fn unsigned_to_signed_saturates_at_max() {
+                assert_eq!(<$unsigned>::MAX.to_signed_saturating(), <$signed>::MAX,);
+            }
+
+            #[test]
+            fn signed_to_unsigned_in_range() {
+                assert_eq!(
+                    $s_ctor(42 as $s_prim).to_unsigned_saturating(),
+                    $u_ctor(42 as $u_prim),
+                );
+                assert_eq!(<$signed>::ZERO.to_unsigned_saturating(), <$unsigned>::ZERO,);
+                assert_eq!(
+                    <$signed>::MAX.to_unsigned_saturating(),
+                    $u_ctor(<$signed>::MAX.into_inner() as $u_prim),
+                );
+            }
+
+            #[test]
+            fn signed_to_unsigned_saturates_negative_to_zero() {
+                assert_eq!(
+                    $s_ctor(-1 as $s_prim).to_unsigned_saturating(),
+                    <$unsigned>::ZERO,
+                );
+                assert_eq!(<$signed>::MIN.to_unsigned_saturating(), <$unsigned>::ZERO,);
+            }
+        }
+    };
+}
+
+same_width_signedness_tests!(signedness_8, Su8, su8, u8, Si8, si8, i8);
+same_width_signedness_tests!(signedness_16, Su16, su16, u16, Si16, si16, i16);
+same_width_signedness_tests!(signedness_32, Su32, su32, u32, Si32, si32, i32);
+same_width_signedness_tests!(signedness_64, Su64, su64, u64, Si64, si64, i64);
+same_width_signedness_tests!(signedness_128, Su128, su128, u128, Si128, si128, i128);
 
 #[test]
 fn div_error_display_and_error_trait() {

@@ -496,3 +496,42 @@ macro_rules! impl_wrapper_to_float {
 
 impl_wrapper_to_float!(f32; Si: i8, i16; Su: u8, u16);
 impl_wrapper_to_float!(f64; Si: i8, i16, i32; Su: u8, u16, u32);
+
+// -- Same-width signedness conversions ----------------------------------
+//
+// Convenience inherent methods for the common "convert to the matching
+// signed/unsigned partner of the same width, clamping on overflow" case.
+// These forward to the existing `SaturatingFrom` impls.
+
+macro_rules! impl_same_width_signedness {
+    ($($unsigned:ty => $signed:ty),+ $(,)?) => {$(
+        impl Su<$unsigned> {
+            /// Converts this unsigned scalar to the signed scalar of the
+            /// same width, saturating at the signed type's `MAX` when the
+            /// value does not fit.
+            #[must_use]
+            #[inline]
+            pub fn to_signed_saturating(self) -> Si<$signed> {
+                <Si<$signed> as SaturatingFrom<Self>>::saturating_from(self)
+            }
+        }
+
+        impl Si<$signed> {
+            /// Converts this signed scalar to the unsigned scalar of the
+            /// same width, saturating negative values to `0`.
+            #[must_use]
+            #[inline]
+            pub fn to_unsigned_saturating(self) -> Su<$unsigned> {
+                <Su<$unsigned> as SaturatingFrom<Self>>::saturating_from(self)
+            }
+        }
+    )+};
+}
+
+impl_same_width_signedness! {
+    u8 => i8,
+    u16 => i16,
+    u32 => i32,
+    u64 => i64,
+    u128 => i128,
+}
