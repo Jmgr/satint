@@ -1,8 +1,29 @@
+## [0.1.3] - 2026-05-02
+
+### 🚀 Features
+
+- Impl full test coverage
+- Set up stricter clippy rules
+- Add TryDiv TryDivAssign TryRem TryRemAssign
+- Add float conversions
+
+### 🐛 Bug Fixes
+
+- Update license text in readme
+
+### ⚙️ Miscellaneous Tasks
+
+- Fix title in readme
+- Update version
 ## [0.1.2] - 2026-04-30
 
 ### 🚀 Features
 
 - Add SaturatingFrom for primitives
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog
 ## [0.1.1] - 2026-04-30
 
 ### 🚀 Features
