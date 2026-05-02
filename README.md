@@ -1,5 +1,13 @@
 # Saturating integers
 
+[![CI](https://github.com/Jmgr/satint/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Jmgr/satint/actions/workflows/ci.yml)
+[![coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/Jmgr/satint/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/satint.svg)](https://crates.io/crates/satint)
+[![docs.rs](https://docs.rs/satint/badge.svg)](https://docs.rs/satint)
+[![MSRV](https://img.shields.io/badge/rustc-1.85.1%2B-blue.svg)](https://github.com/Jmgr/satint/blob/main/Cargo.toml)
+[![no_std](https://img.shields.io/badge/no__std-supported-green.svg)](https://docs.rs/satint)
+[![license](https://img.shields.io/crates/l/satint.svg)](https://github.com/Jmgr/satint#license)
+
 `satint` provides small `no_std`, no-alloc wrappers around Rust primitive
 integers that use saturating arithmetic for ordinary integer operations.
 
