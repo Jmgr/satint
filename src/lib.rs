@@ -44,11 +44,17 @@
 
 /// Saturating conversion traits and cross-width conversion impls.
 pub mod convert;
+#[cfg(feature = "rand")]
+mod rand;
+#[cfg(feature = "serde")]
+mod serde;
 /// Signed saturating scalar types.
 pub mod si;
 /// Unsigned saturating scalar types.
 pub mod su;
 
+#[cfg(feature = "rand")]
+pub use crate::rand::{UniformSi, UniformSu};
 pub use convert::{SaturatingFrom, SaturatingInto};
 pub use si::{Si, Si8, Si16, Si32, Si64, Si128, si8, si16, si32, si64, si128};
 pub use su::{Su, Su8, Su16, Su32, Su64, Su128, su8, su16, su32, su64, su128};
@@ -182,33 +188,11 @@ macro_rules! define_wrapper {
             {
                 self.0.0
             }
-        }
 
-        #[cfg(feature = "serde")]
-        impl<T> serde::Serialize for $wrapper<T>
-        where
-            T: serde::Serialize,
-        {
+            #[cfg(feature = "serde")]
             #[inline]
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-            where
-                S: serde::Serializer,
-            {
-                serde::Serialize::serialize(&self.0.0, serializer)
-            }
-        }
-
-        #[cfg(feature = "serde")]
-        impl<'de, T> serde::Deserialize<'de> for $wrapper<T>
-        where
-            T: serde::Deserialize<'de>,
-        {
-            #[inline]
-            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                <T as serde::Deserialize>::deserialize(deserializer).map(Self::new)
+            pub(crate) const fn as_inner(&self) -> &T {
+                &self.0.0
             }
         }
 

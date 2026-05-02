@@ -15,9 +15,11 @@ resolver = "2"
 
 [features]
 default = []
+rand = ["dep:rand"]
 serde = ["dep:serde"]
 
 [dependencies]
+rand = { version = "0.10.1", default-features = false, optional = true }
 serde = { version = "1.0", default-features = false, optional = true }
 
 [dev-dependencies]

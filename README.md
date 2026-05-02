@@ -228,16 +228,25 @@ assert_eq!(values.iter().copied().sum::<Su32>().into_inner(), 10);
 assert_eq!(values.iter().product::<Su32>().into_inner(), 24);
 ```
 
-## Optional `serde` Support
+## Optional `serde` and `rand` Support
 
-Enable the `serde` feature to serialize and deserialize scalar values as their inner integer representation:
+```rust
+# #[cfg(feature = "rand")]
+# {
+use rand::{RngExt, SeedableRng, rngs::SmallRng};
+use satint::{si16, su8};
 
-```toml
-[dependencies]
-satint = { version = "0.1", features = ["serde"] }
+let mut rng = SmallRng::seed_from_u64(1);
+
+let signed = rng.random_range(si16(-10)..si16(10));
+assert!(signed >= si16(-10));
+assert!(signed < si16(10));
+
+let unsigned = rng.random_range(su8(1)..=su8(6));
+assert!(unsigned >= su8(1));
+assert!(unsigned <= su8(6));
+# }
 ```
-
-The feature depends on `serde` without enabling serde's default features, so it remains compatible with `no_std` users.
 
 ## `no_std`
 
