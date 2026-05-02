@@ -1,3 +1,12 @@
+## [0.1.5] - 2026-05-02
+
+### 🚀 Features
+
+- Add standard integer methods and endianness support
+
+### ⚙️ Miscellaneous Tasks
+
+- Update version
 ## [0.1.4] - 2026-05-02
 
 ### 🚀 Features
@@ -18,6 +27,7 @@
 ### ⚙️ Miscellaneous Tasks
 
 - Update version
+- Update changelog
 ## [0.1.3] - 2026-05-02
 
 ### 🚀 Features
