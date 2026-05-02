@@ -1,3 +1,23 @@
+## [0.1.4] - 2026-05-02
+
+### 🚀 Features
+
+- Add same-width signedness flipping functions
+- Doctest readme examples
+- Added extra CI checks
+- Add badges to readme
+
+### 🐛 Bug Fixes
+
+- CI msrv
+
+### 📚 Documentation
+
+- Added examples in the library's rustdoc
+
+### ⚙️ Miscellaneous Tasks
+
+- Update version
 ## [0.1.3] - 2026-05-02
 
 ### 🚀 Features
@@ -15,6 +35,7 @@
 
 - Fix title in readme
 - Update version
+- Update changelog
 ## [0.1.2] - 2026-04-30
 
 ### 🚀 Features
