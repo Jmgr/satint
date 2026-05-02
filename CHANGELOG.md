@@ -1,3 +1,16 @@
+## [0.2.1] - 2026-05-02
+
+### 🚀 Features
+
+- Add rand support
+
+### 📚 Documentation
+
+- Simplify examples
+
+### ⚙️ Miscellaneous Tasks
+
+- Update version
 ## [0.2.0] - 2026-05-02
 
 ### 🚀 Features
@@ -7,6 +20,7 @@
 ### ⚙️ Miscellaneous Tasks
 
 - Update version
+- Update changelog
 ## [0.1.5] - 2026-05-02
 
 ### 🚀 Features
