@@ -1127,38 +1127,29 @@ macro_rules! same_width_signedness_tests {
 
             #[test]
             fn unsigned_to_signed_in_range() {
-                assert_eq!(
-                    $u_ctor(42 as $u_prim).to_signed_saturating(),
-                    $s_ctor(42 as $s_prim),
-                );
-                assert_eq!(<$unsigned>::ZERO.to_signed_saturating(), <$signed>::ZERO,);
+                assert_eq!($u_ctor(42 as $u_prim).to_signed(), $s_ctor(42 as $s_prim),);
+                assert_eq!(<$unsigned>::ZERO.to_signed(), <$signed>::ZERO,);
             }
 
             #[test]
             fn unsigned_to_signed_saturates_at_max() {
-                assert_eq!(<$unsigned>::MAX.to_signed_saturating(), <$signed>::MAX,);
+                assert_eq!(<$unsigned>::MAX.to_signed(), <$signed>::MAX,);
             }
 
             #[test]
             fn signed_to_unsigned_in_range() {
+                assert_eq!($s_ctor(42 as $s_prim).to_unsigned(), $u_ctor(42 as $u_prim),);
+                assert_eq!(<$signed>::ZERO.to_unsigned(), <$unsigned>::ZERO,);
                 assert_eq!(
-                    $s_ctor(42 as $s_prim).to_unsigned_saturating(),
-                    $u_ctor(42 as $u_prim),
-                );
-                assert_eq!(<$signed>::ZERO.to_unsigned_saturating(), <$unsigned>::ZERO,);
-                assert_eq!(
-                    <$signed>::MAX.to_unsigned_saturating(),
+                    <$signed>::MAX.to_unsigned(),
                     $u_ctor(<$signed>::MAX.into_inner() as $u_prim),
                 );
             }
 
             #[test]
             fn signed_to_unsigned_saturates_negative_to_zero() {
-                assert_eq!(
-                    $s_ctor(-1 as $s_prim).to_unsigned_saturating(),
-                    <$unsigned>::ZERO,
-                );
-                assert_eq!(<$signed>::MIN.to_unsigned_saturating(), <$unsigned>::ZERO,);
+                assert_eq!($s_ctor(-1 as $s_prim).to_unsigned(), <$unsigned>::ZERO,);
+                assert_eq!(<$signed>::MIN.to_unsigned(), <$unsigned>::ZERO,);
             }
         }
     };

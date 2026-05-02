@@ -133,11 +133,11 @@ saturating conversions above:
 ```rust
 use satint::{Si32, Su32, si32, su32};
 
-assert_eq!(su32(42).to_signed_saturating(), si32(42));
-assert_eq!(Su32::MAX.to_signed_saturating(), Si32::MAX);
+assert_eq!(su32(42).to_signed(), si32(42));
+assert_eq!(Su32::MAX.to_signed(), Si32::MAX);
 
-assert_eq!(si32(42).to_unsigned_saturating(), su32(42));
-assert_eq!(si32(-1).to_unsigned_saturating(), Su32::ZERO);
+assert_eq!(si32(42).to_unsigned(), su32(42));
+assert_eq!(si32(-1).to_unsigned(), Su32::ZERO);
 ```
 
 Primitive integers can also be used as the source:

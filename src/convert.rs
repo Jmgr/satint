@@ -511,7 +511,7 @@ macro_rules! impl_same_width_signedness {
             /// value does not fit.
             #[must_use]
             #[inline]
-            pub fn to_signed_saturating(self) -> Si<$signed> {
+            pub fn to_signed(self) -> Si<$signed> {
                 <Si<$signed> as SaturatingFrom<Self>>::saturating_from(self)
             }
         }
@@ -521,7 +521,7 @@ macro_rules! impl_same_width_signedness {
             /// same width, saturating negative values to `0`.
             #[must_use]
             #[inline]
-            pub fn to_unsigned_saturating(self) -> Su<$unsigned> {
+            pub fn to_unsigned(self) -> Su<$unsigned> {
                 <Su<$unsigned> as SaturatingFrom<Self>>::saturating_from(self)
             }
         }
