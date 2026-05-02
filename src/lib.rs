@@ -44,6 +44,23 @@ impl core::fmt::Display for DivError {
 
 impl core::error::Error for DivError {}
 
+/// Error returned by fallible float-to-integer conversions.
+///
+/// Produced by `TryFrom<f32>` / `TryFrom<f64>` impls for [`Si`](si::Si) and
+/// [`Su`](su::Su) when the source value is `NaN`, infinite, or finite but
+/// outside the destination integer's representable range.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub struct TryFromFloatError(pub(crate) ());
+
+impl core::fmt::Display for TryFromFloatError {
+    #[inline]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str("out of range float type conversion attempted")
+    }
+}
+
+impl core::error::Error for TryFromFloatError {}
+
 /// Fallible division that distinguishes division by zero from overflow.
 pub trait TryDiv<Rhs = Self> {
     /// Result type produced by the division.

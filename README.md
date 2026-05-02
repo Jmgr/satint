@@ -16,11 +16,11 @@ makes that behavior part of the type:
 ```rust
 use satint::{Su8, su8};
 
-assert_eq!((su8(250) + su8(10)).into_inner(), u8::MAX);
-assert_eq!((su8(0) - su8(1)).into_inner(), 0);
+assert_eq!((su8(250) + 10).into_inner(), u8::MAX);
+assert_eq!((su8(0) - 1).into_inner(), 0);
 
 let mut health = Su8::MAX;
-health += su8(1);
+health += 1;
 assert_eq!(health, Su8::MAX);
 ```
 
@@ -44,30 +44,23 @@ Each alias is a transparent wrapper over `core::num::Saturating<T>`.
 
 ## Arithmetic
 
-`+`, `-`, and `*` saturate for same-width values:
+`+`, `-`, and `*` saturate for same-width values. The right-hand side can be
+either another wrapper or a matching primitive:
 
 ```rust
-use satint::{Si32, Su8, si32, su8};
+use satint::{Si32, Su8, Su16, si32, su8, su16};
 
-assert_eq!((Su8::MAX + su8(1)).into_inner(), u8::MAX);
-assert_eq!((su8(0) - su8(1)).into_inner(), 0);
+assert_eq!((Su8::MAX + 1).into_inner(), u8::MAX);
+assert_eq!((su8(0) - 1).into_inner(), 0);
 
-assert_eq!((Si32::MAX + si32(1)).into_inner(), i32::MAX);
-assert_eq!((Si32::MIN - si32(1)).into_inner(), i32::MIN);
-assert_eq!((si32(6) * si32(-7)).into_inner(), -42);
-```
-
-Primitive right-hand sides are also supported:
-
-```rust
-use satint::{Su16, su16};
+assert_eq!((Si32::MAX + 1).into_inner(), i32::MAX);
+assert_eq!((Si32::MIN - 1).into_inner(), i32::MIN);
+assert_eq!((si32(6) * -7).into_inner(), -42);
 
 let mut value = su16(10);
 value += 5;
 value *= 3;
-
 assert_eq!(value.into_inner(), 45);
-assert_eq!((Su16::MAX + 1).into_inner(), u16::MAX);
 ```
 
 ## Division And Remainder
@@ -138,6 +131,56 @@ assert_eq!(signed.into_inner(), 42);
 assert_eq!(unsigned.into_inner(), 42);
 ```
 
+## Float Conversions
+
+`f32` and `f64` can be converted into any signed or unsigned wrapper, in both
+saturating and fallible forms. Both truncate toward zero on the way to an
+integer.
+
+`SaturatingFrom` mirrors Rust's `as` cast: `NaN` becomes zero, infinities
+saturate to `MIN` / `MAX` (or `0` / `MAX` for unsigned), and finite
+out-of-range values clamp to the closest endpoint.
+
+```rust
+use satint::{SaturatingFrom, Si32, Su8};
+
+assert_eq!(Si32::saturating_from(3.7_f64).into_inner(), 3);
+assert_eq!(Si32::saturating_from(-3.7_f64).into_inner(), -3);
+assert_eq!(Si32::saturating_from(f64::NAN).into_inner(), 0);
+assert_eq!(Si32::saturating_from(f64::INFINITY), Si32::MAX);
+assert_eq!(Su8::saturating_from(-1.0_f32), Su8::ZERO);
+assert_eq!(Su8::saturating_from(300.0_f32), Su8::MAX);
+```
+
+`TryFrom` rejects `NaN`, `±Inf`, and any finite value whose truncated form
+falls outside the destination's range, returning `TryFromFloatError`.
+
+```rust
+use satint::{Si16, Su8, TryFromFloatError};
+
+assert_eq!(Si16::try_from(1234.7_f64).map(Si16::into_inner), Ok(1234));
+assert!(Si16::try_from(40_000.0_f64).is_err());
+assert!(Su8::try_from(-1.0_f32).is_err());
+assert!(Si16::try_from(f64::NAN).is_err());
+
+let _: TryFromFloatError = Si16::try_from(f64::NAN).unwrap_err();
+```
+
+The reverse direction — wrapper to float — is provided as `From` only for
+widths that round-trip exactly: `Si8`, `Si16`, `Su8`, `Su16` for `f32`, and
+those plus `Si32`, `Su32` for `f64`. Wider integers are not supported as
+sources because not every value would survive the cast losslessly.
+
+```rust
+use satint::{si16, su32};
+
+let as_f32: f32 = si16(-1234).into();
+let as_f64: f64 = su32(4_000_000_000).into();
+
+assert_eq!(as_f32, -1234.0);
+assert_eq!(as_f64, 4_000_000_000.0);
+```
+
 ## Widening Arithmetic
 
 Same-sign wider-left-hand-side `+` and `-` are supported when the right-hand
@@ -192,8 +235,9 @@ clamping (`SaturatingFrom` / `SaturatingInto`). The crate is also
 
 ## Limitations
 
-- This crate is for integer types only. Floats do not have integer-style
-  saturating bounds.
+- Wrapped values are integers only — there are no floating-point wrappers.
+  Float ↔ integer conversions are provided through `SaturatingFrom`,
+  `TryFrom`, and `From` (lossless cases only).
 - Only `+`, `-`, `*`, their assignment forms, and signed unary `-` are operator
   overloads.
 - Division and remainder are available only through `checked_div` and

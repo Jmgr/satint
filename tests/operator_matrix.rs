@@ -1,8 +1,8 @@
 use rstest::rstest;
 use satint::{
     DivError, SaturatingFrom, SaturatingInto, Si8, Si16, Si32, Si64, Si128, Su8, Su16, Su32, Su64,
-    Su128, TryDiv, TryDivAssign, TryRem, TryRemAssign, si8, si16, si32, si64, si128, su8, su16,
-    su32, su64, su128,
+    Su128, TryDiv, TryDivAssign, TryFromFloatError, TryRem, TryRemAssign, si8, si16, si32, si64,
+    si128, su8, su16, su32, su64, su128,
 };
 use std::cmp::Ordering;
 
@@ -778,6 +778,214 @@ unsigned_narrowing_conversion_tests!(su16_su8_narrowing, Su16, su16, Su8, su8);
 signed_narrowing_conversion_tests!(si16_si8_narrowing, Si16, si16, Si8, si8);
 signed_to_unsigned_conversion_tests!(si16_su8_fallible, Si16, si16, Su8, su8);
 unsigned_to_signed_fallible_conversion_tests!(su16_si8_fallible, Su16, su16, Si8, si8);
+
+macro_rules! float_to_signed_tests {
+    ($module:ident, $float:ty, $scalar:ty, $ctor:ident, $primitive:ty) => {
+        mod $module {
+            use super::*;
+
+            #[test]
+            fn saturating_from_finite_in_range() {
+                assert_eq!(
+                    <$scalar>::saturating_from(3.7 as $float),
+                    $ctor(3 as $primitive)
+                );
+                assert_eq!(
+                    <$scalar>::saturating_from(-3.7 as $float),
+                    $ctor(-3 as $primitive)
+                );
+                assert_eq!(<$scalar>::saturating_from(0.0 as $float), <$scalar>::ZERO);
+                assert_eq!(<$scalar>::saturating_from(-0.0 as $float), <$scalar>::ZERO);
+                // Values smaller than 1 in magnitude truncate toward zero.
+                assert_eq!(<$scalar>::saturating_from(-0.5 as $float), <$scalar>::ZERO);
+            }
+
+            #[test]
+            fn saturating_from_non_finite() {
+                assert_eq!(
+                    <$scalar>::saturating_from(<$float>::INFINITY),
+                    <$scalar>::MAX
+                );
+                assert_eq!(
+                    <$scalar>::saturating_from(<$float>::NEG_INFINITY),
+                    <$scalar>::MIN
+                );
+                assert_eq!(<$scalar>::saturating_from(<$float>::NAN), <$scalar>::ZERO);
+            }
+
+            #[test]
+            fn try_from_finite_in_range() {
+                assert_eq!(
+                    <$scalar>::try_from(3.7 as $float),
+                    Ok($ctor(3 as $primitive))
+                );
+                assert_eq!(
+                    <$scalar>::try_from(-3.7 as $float),
+                    Ok($ctor(-3 as $primitive))
+                );
+                assert_eq!(<$scalar>::try_from(0.0 as $float), Ok(<$scalar>::ZERO));
+                // Truncates toward zero — fractional negatives become 0.
+                assert_eq!(<$scalar>::try_from(-0.5 as $float), Ok(<$scalar>::ZERO));
+            }
+
+            #[test]
+            fn try_from_rejects_nan_and_infinity() {
+                assert!(<$scalar>::try_from(<$float>::NAN).is_err());
+                assert!(<$scalar>::try_from(<$float>::INFINITY).is_err());
+                assert!(<$scalar>::try_from(<$float>::NEG_INFINITY).is_err());
+            }
+        }
+    };
+}
+
+macro_rules! float_to_unsigned_tests {
+    ($module:ident, $float:ty, $scalar:ty, $ctor:ident, $primitive:ty) => {
+        mod $module {
+            use super::*;
+
+            #[test]
+            fn saturating_from_finite_in_range() {
+                assert_eq!(
+                    <$scalar>::saturating_from(3.7 as $float),
+                    $ctor(3 as $primitive)
+                );
+                assert_eq!(<$scalar>::saturating_from(0.0 as $float), <$scalar>::ZERO);
+                assert_eq!(<$scalar>::saturating_from(-0.5 as $float), <$scalar>::ZERO);
+                assert_eq!(<$scalar>::saturating_from(-5.0 as $float), <$scalar>::ZERO);
+            }
+
+            #[test]
+            fn saturating_from_non_finite() {
+                assert_eq!(
+                    <$scalar>::saturating_from(<$float>::INFINITY),
+                    <$scalar>::MAX
+                );
+                assert_eq!(
+                    <$scalar>::saturating_from(<$float>::NEG_INFINITY),
+                    <$scalar>::ZERO
+                );
+                assert_eq!(<$scalar>::saturating_from(<$float>::NAN), <$scalar>::ZERO);
+            }
+
+            #[test]
+            fn try_from_finite_in_range() {
+                assert_eq!(
+                    <$scalar>::try_from(3.7 as $float),
+                    Ok($ctor(3 as $primitive))
+                );
+                assert_eq!(<$scalar>::try_from(0.0 as $float), Ok(<$scalar>::ZERO));
+                // -0.5 truncates to 0 toward zero, which is in range.
+                assert_eq!(<$scalar>::try_from(-0.5 as $float), Ok(<$scalar>::ZERO));
+            }
+
+            #[test]
+            fn try_from_rejects_nan_and_infinity() {
+                assert!(<$scalar>::try_from(<$float>::NAN).is_err());
+                assert!(<$scalar>::try_from(<$float>::INFINITY).is_err());
+                assert!(<$scalar>::try_from(<$float>::NEG_INFINITY).is_err());
+            }
+
+            #[test]
+            fn try_from_rejects_negative_below_truncation() {
+                // Values whose truncation falls strictly below zero are rejected.
+                assert!(<$scalar>::try_from(-1.0 as $float).is_err());
+                assert!(<$scalar>::try_from(-100.0 as $float).is_err());
+            }
+        }
+    };
+}
+
+float_to_signed_tests!(f32_to_si8, f32, Si8, si8, i8);
+float_to_signed_tests!(f32_to_si16, f32, Si16, si16, i16);
+float_to_signed_tests!(f32_to_si32, f32, Si32, si32, i32);
+float_to_signed_tests!(f32_to_si64, f32, Si64, si64, i64);
+float_to_signed_tests!(f32_to_si128, f32, Si128, si128, i128);
+float_to_signed_tests!(f64_to_si8, f64, Si8, si8, i8);
+float_to_signed_tests!(f64_to_si16, f64, Si16, si16, i16);
+float_to_signed_tests!(f64_to_si32, f64, Si32, si32, i32);
+float_to_signed_tests!(f64_to_si64, f64, Si64, si64, i64);
+float_to_signed_tests!(f64_to_si128, f64, Si128, si128, i128);
+
+float_to_unsigned_tests!(f32_to_su8, f32, Su8, su8, u8);
+float_to_unsigned_tests!(f32_to_su16, f32, Su16, su16, u16);
+float_to_unsigned_tests!(f32_to_su32, f32, Su32, su32, u32);
+float_to_unsigned_tests!(f32_to_su64, f32, Su64, su64, u64);
+float_to_unsigned_tests!(f32_to_su128, f32, Su128, su128, u128);
+float_to_unsigned_tests!(f64_to_su8, f64, Su8, su8, u8);
+float_to_unsigned_tests!(f64_to_su16, f64, Su16, su16, u16);
+float_to_unsigned_tests!(f64_to_su32, f64, Su32, su32, u32);
+float_to_unsigned_tests!(f64_to_su64, f64, Su64, su64, u64);
+float_to_unsigned_tests!(f64_to_su128, f64, Su128, su128, u128);
+
+#[test]
+fn try_from_finite_overflow_signed() {
+    assert!(Si8::try_from(200.0_f32).is_err());
+    assert!(Si8::try_from(-200.0_f32).is_err());
+    assert!(Si16::try_from(40_000.0_f32).is_err());
+    assert!(Si32::try_from(3e9_f32).is_err());
+    assert!(Si64::try_from(1e20_f32).is_err());
+    assert!(Si128::try_from(f32::MAX).is_err());
+    assert!(Si128::try_from(-f32::MAX).is_err());
+
+    assert!(Si8::try_from(200.0_f64).is_err());
+    assert!(Si8::try_from(-200.0_f64).is_err());
+    assert!(Si16::try_from(40_000.0_f64).is_err());
+    assert!(Si32::try_from(3e9_f64).is_err());
+    assert!(Si64::try_from(1e20_f64).is_err());
+    assert!(Si128::try_from(1e40_f64).is_err());
+    assert!(Si128::try_from(-1e40_f64).is_err());
+}
+
+#[test]
+fn try_from_finite_overflow_unsigned() {
+    assert!(Su8::try_from(300.0_f32).is_err());
+    assert!(Su16::try_from(70_000.0_f32).is_err());
+    assert!(Su32::try_from(5e9_f32).is_err());
+    assert!(Su64::try_from(1e20_f32).is_err());
+    // No finite f32 exceeds u128's range — overflow is reachable only
+    // through ±Inf, exercised in the parametric tests above.
+
+    assert!(Su8::try_from(300.0_f64).is_err());
+    assert!(Su16::try_from(70_000.0_f64).is_err());
+    assert!(Su32::try_from(5e9_f64).is_err());
+    assert!(Su64::try_from(1e20_f64).is_err());
+    assert!(Su128::try_from(1e40_f64).is_err());
+}
+
+#[test]
+fn saturating_from_finite_overflow() {
+    assert_eq!(Si8::saturating_from(200.0_f32), Si8::MAX);
+    assert_eq!(Si8::saturating_from(-200.0_f64), Si8::MIN);
+    assert_eq!(Su8::saturating_from(300.0_f32), Su8::MAX);
+    assert_eq!(Si128::saturating_from(f32::MAX), Si128::MAX);
+    assert_eq!(Su128::saturating_from(1e40_f64), Su128::MAX);
+}
+
+#[test]
+fn lossless_int_to_float() {
+    assert_eq!(f32::from(si8(-5)), -5.0_f32);
+    assert_eq!(f32::from(si16(1234)), 1234.0_f32);
+    assert_eq!(f32::from(su8(200)), 200.0_f32);
+    assert_eq!(f32::from(su16(40_000)), 40_000.0_f32);
+
+    assert_eq!(f64::from(si8(-5)), -5.0_f64);
+    assert_eq!(f64::from(si16(1234)), 1234.0_f64);
+    assert_eq!(f64::from(si32(-1_000_000)), -1_000_000.0_f64);
+    assert_eq!(f64::from(su8(200)), 200.0_f64);
+    assert_eq!(f64::from(su16(40_000)), 40_000.0_f64);
+    assert_eq!(f64::from(su32(4_000_000_000)), 4_000_000_000.0_f64);
+}
+
+#[test]
+fn try_from_float_error_traits() {
+    let err = TryFromFloatError::default();
+    assert_eq!(format!("{err}"), "out of range float type conversion attempted");
+    assert_eq!(format!("{err:?}"), "TryFromFloatError(())");
+    let trait_err: &dyn core::error::Error = &err;
+    assert_eq!(format!("{trait_err}"), "out of range float type conversion attempted");
+    let cloned = err;
+    assert_eq!(cloned, err);
+}
 
 #[test]
 fn div_error_display_and_error_trait() {

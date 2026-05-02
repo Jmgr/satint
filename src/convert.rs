@@ -1,6 +1,7 @@
 use core::num::TryFromIntError;
 use core::ops::{Add, AddAssign, Sub, SubAssign};
 
+use crate::TryFromFloatError;
 use crate::si::Si;
 use crate::su::Su;
 
@@ -381,3 +382,117 @@ impl_su_to_si_fallible! {
     u64 => i8, u64 => i16, u64 => i32, u64 => i64,
     u128 => i8, u128 => i16, u128 => i32, u128 => i64, u128 => i128,
 }
+
+// -- Float → wrapper conversions ----------------------------------------
+//
+// `SaturatingFrom` matches Rust's `as` cast for f32/f64 → integer (NaN → 0,
+// ±Inf → MIN/MAX, finite → clamp to range, truncate toward zero).
+//
+// `TryFrom` rejects NaN, ±Inf, and any finite value whose truncated form
+// falls outside the destination's representable range.
+//
+// `$hi` is `T::MAX + 1` as a float (e.g. `256.0` for u8, `2^127` for i128).
+// `$lo` is `T::MIN` as a float (always exactly representable for fixed-bit
+// integers). Out of range iff `truncated < $lo || truncated >= $hi`. For the
+// f32 → u128 case, `T::MAX + 1 = 2^128` overflows f32, so `f32::INFINITY`
+// stands in — every finite f32 fits in u128, so the upper bound never trips.
+
+macro_rules! impl_float_to_si {
+    ($float:ty; $($int:ty),+ $(,)?) => {$(
+        impl SaturatingFrom<$float> for Si<$int> {
+            #[inline]
+            fn saturating_from(value: $float) -> Self {
+                Self::new(value as $int)
+            }
+        }
+
+        impl TryFrom<$float> for Si<$int> {
+            type Error = TryFromFloatError;
+
+            #[inline]
+            fn try_from(value: $float) -> Result<Self, Self::Error> {
+                if !value.is_finite() {
+                    return Err(TryFromFloatError(()));
+                }
+                // `T::MIN as $float` is exact for fixed-bit signed integers
+                // (always a power-of-two negation). The exclusive upper bound
+                // is `-(T::MIN as $float) = T::MAX + 1`, also exact.
+                let lo = <$int>::MIN as $float;
+                let hi = -lo;
+                let truncated = value - (value % 1.0);
+                if !(lo..hi).contains(&truncated) {
+                    return Err(TryFromFloatError(()));
+                }
+                Ok(Self::new(truncated as $int))
+            }
+        }
+    )+};
+}
+
+macro_rules! impl_float_to_su {
+    ($float:ty; $($int:ty),+ $(,)?) => {$(
+        impl SaturatingFrom<$float> for Su<$int> {
+            #[inline]
+            fn saturating_from(value: $float) -> Self {
+                Self::new(value as $int)
+            }
+        }
+
+        impl TryFrom<$float> for Su<$int> {
+            type Error = TryFromFloatError;
+
+            #[inline]
+            fn try_from(value: $float) -> Result<Self, Self::Error> {
+                if !value.is_finite() {
+                    return Err(TryFromFloatError(()));
+                }
+                // `(T::MAX as $float) + 1.0` evaluates to `T::MAX + 1` for
+                // narrow targets and to `2^N` for wide ones (where MAX rounds
+                // up to 2^N already, so adding 1.0 is a no-op). For
+                // `f32 → u128` MAX rounds up to `+inf`, which makes the
+                // upper bound trivially out of reach for finite inputs — and
+                // every finite f32 fits in u128 anyway.
+                let hi = (<$int>::MAX as $float) + 1.0;
+                let truncated = value - (value % 1.0);
+                if !(0.0..hi).contains(&truncated) {
+                    return Err(TryFromFloatError(()));
+                }
+                Ok(Self::new(truncated as $int))
+            }
+        }
+    )+};
+}
+
+impl_float_to_si!(f32; i8, i16, i32, i64, i128);
+impl_float_to_su!(f32; u8, u16, u32, u64, u128);
+impl_float_to_si!(f64; i8, i16, i32, i64, i128);
+impl_float_to_su!(f64; u8, u16, u32, u64, u128);
+
+// -- Wrapper → float conversions (lossless only) ------------------------
+//
+// Mirrors stdlib's `From<iN> for fM` impls, restricted to widths that fit
+// in the float's mantissa exactly: 24 bits for f32, 53 bits for f64.
+
+macro_rules! impl_wrapper_to_float {
+    ($float:ty; Si: $($si:ty),*; Su: $($su:ty),*) => {
+        $(
+            impl From<Si<$si>> for $float {
+                #[inline]
+                fn from(value: Si<$si>) -> Self {
+                    <$float>::from(value.into_inner())
+                }
+            }
+        )*
+        $(
+            impl From<Su<$su>> for $float {
+                #[inline]
+                fn from(value: Su<$su>) -> Self {
+                    <$float>::from(value.into_inner())
+                }
+            }
+        )*
+    };
+}
+
+impl_wrapper_to_float!(f32; Si: i8, i16; Su: u8, u16);
+impl_wrapper_to_float!(f64; Si: i8, i16, i32; Su: u8, u16, u32);
