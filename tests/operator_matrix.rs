@@ -226,6 +226,56 @@ macro_rules! unsigned_operator_tests {
             }
 
             #[test]
+            fn standard_integer_helpers() {
+                let value = $ctor(0b0001_0011 as $primitive);
+                let primitive = value.into_inner();
+
+                assert_eq!(<$scalar>::BITS, <$primitive>::BITS);
+                assert_eq!(value.count_ones(), primitive.count_ones());
+                assert_eq!(value.count_zeros(), primitive.count_zeros());
+                assert_eq!(value.leading_zeros(), primitive.leading_zeros());
+                assert_eq!(value.leading_ones(), primitive.leading_ones());
+                assert_eq!(value.trailing_zeros(), primitive.trailing_zeros());
+                assert_eq!(value.trailing_ones(), primitive.trailing_ones());
+                assert_eq!(value.reverse_bits(), $ctor(primitive.reverse_bits()));
+                assert_eq!(value.rotate_left(3), $ctor(primitive.rotate_left(3)));
+                assert_eq!(value.rotate_right(2), $ctor(primitive.rotate_right(2)));
+
+                assert_eq!(value.swap_bytes(), $ctor(primitive.swap_bytes()));
+                assert_eq!(<$scalar>::from_be(value.to_be()), value);
+                assert_eq!(<$scalar>::from_le(value.to_le()), value);
+                assert_eq!(value.to_be(), $ctor(primitive.to_be()));
+                assert_eq!(value.to_le(), $ctor(primitive.to_le()));
+                assert_eq!(value.to_be_bytes(), primitive.to_be_bytes());
+                assert_eq!(value.to_le_bytes(), primitive.to_le_bytes());
+                assert_eq!(value.to_ne_bytes(), primitive.to_ne_bytes());
+                assert_eq!(<$scalar>::from_be_bytes(value.to_be_bytes()), value);
+                assert_eq!(<$scalar>::from_le_bytes(value.to_le_bytes()), value);
+                assert_eq!(<$scalar>::from_ne_bytes(value.to_ne_bytes()), value);
+
+                assert_eq!($ctor(20).checked_div_euclid($ctor(3)), Some($ctor(6)));
+                assert_eq!($ctor(20).checked_rem_euclid($ctor(3)), Some($ctor(2)));
+                assert_eq!($ctor(20).checked_div_euclid($ctor(0)), None);
+                assert_eq!($ctor(20).checked_rem_euclid($ctor(0)), None);
+                assert_eq!($ctor(3).pow(3), $ctor(27));
+                assert_eq!(<$scalar>::MAX.pow(2), <$scalar>::MAX);
+                assert_eq!($ctor(100).checked_ilog(10 as $primitive), Some(2));
+                assert_eq!($ctor(8).checked_ilog2(), Some(3));
+                assert_eq!($ctor(100).checked_ilog10(), Some(2));
+                assert_eq!(<$scalar>::ZERO.checked_ilog2(), None);
+
+                assert_eq!($ctor(9).abs_diff($ctor(5)), $ctor(4));
+                assert_eq!($ctor(5).abs_diff($ctor(9)), $ctor(4));
+                assert!($ctor(8).is_power_of_two());
+                assert!(!$ctor(10).is_power_of_two());
+                assert_eq!($ctor(9).checked_next_power_of_two(), Some($ctor(16)));
+                assert_eq!(<$scalar>::MAX.checked_next_power_of_two(), None);
+                assert_eq!($ctor(9).next_power_of_two(), $ctor(16));
+                assert_eq!(<$scalar>::MAX.next_power_of_two(), <$scalar>::MAX);
+                assert_eq!($ctor(17).isqrt(), $ctor(4));
+            }
+
+            #[test]
             fn wrapper_helpers() {
                 assert_eq!(format!("{:?}", $ctor(7)), "Su(7)");
                 assert_eq!($ctor(7).to_string(), "7");
@@ -557,6 +607,79 @@ macro_rules! signed_operator_tests {
             fn neg() {
                 assert_eq!(-$ctor(5), $ctor(-5));
                 assert_eq!(-<$scalar>::MIN, <$scalar>::MAX);
+            }
+
+            #[test]
+            fn standard_integer_helpers() {
+                let value = $ctor(0b0001_0011 as $primitive);
+                let primitive = value.into_inner();
+
+                assert_eq!(<$scalar>::BITS, <$primitive>::BITS);
+                assert_eq!(value.count_ones(), primitive.count_ones());
+                assert_eq!(value.count_zeros(), primitive.count_zeros());
+                assert_eq!(value.leading_zeros(), primitive.leading_zeros());
+                assert_eq!(value.leading_ones(), primitive.leading_ones());
+                assert_eq!(value.trailing_zeros(), primitive.trailing_zeros());
+                assert_eq!(value.trailing_ones(), primitive.trailing_ones());
+                assert_eq!(value.reverse_bits(), $ctor(primitive.reverse_bits()));
+                assert_eq!(value.rotate_left(3), $ctor(primitive.rotate_left(3)));
+                assert_eq!(value.rotate_right(2), $ctor(primitive.rotate_right(2)));
+
+                assert_eq!(value.swap_bytes(), $ctor(primitive.swap_bytes()));
+                assert_eq!(<$scalar>::from_be(value.to_be()), value);
+                assert_eq!(<$scalar>::from_le(value.to_le()), value);
+                assert_eq!(value.to_be(), $ctor(primitive.to_be()));
+                assert_eq!(value.to_le(), $ctor(primitive.to_le()));
+                assert_eq!(value.to_be_bytes(), primitive.to_be_bytes());
+                assert_eq!(value.to_le_bytes(), primitive.to_le_bytes());
+                assert_eq!(value.to_ne_bytes(), primitive.to_ne_bytes());
+                assert_eq!(<$scalar>::from_be_bytes(value.to_be_bytes()), value);
+                assert_eq!(<$scalar>::from_le_bytes(value.to_le_bytes()), value);
+                assert_eq!(<$scalar>::from_ne_bytes(value.to_ne_bytes()), value);
+
+                assert_eq!(
+                    $ctor(-20).checked_div_euclid($ctor(3)),
+                    (-20 as $primitive)
+                        .checked_div_euclid(3 as $primitive)
+                        .map($ctor),
+                );
+                assert_eq!(
+                    $ctor(-20).checked_rem_euclid($ctor(3)),
+                    (-20 as $primitive)
+                        .checked_rem_euclid(3 as $primitive)
+                        .map($ctor),
+                );
+                assert_eq!($ctor(20).checked_div_euclid($ctor(0)), None);
+                assert_eq!($ctor(20).checked_rem_euclid($ctor(0)), None);
+                assert_eq!(<$scalar>::MIN.checked_div_euclid($ctor(-1)), None);
+                assert_eq!(<$scalar>::MIN.checked_rem_euclid($ctor(-1)), None);
+                assert_eq!($ctor(3).pow(3), $ctor(27));
+                assert_eq!(<$scalar>::MAX.pow(2), <$scalar>::MAX);
+                assert_eq!($ctor(100).checked_ilog(10 as $primitive), Some(2));
+                assert_eq!($ctor(8).checked_ilog2(), Some(3));
+                assert_eq!($ctor(100).checked_ilog10(), Some(2));
+                assert_eq!(<$scalar>::ZERO.checked_ilog2(), None);
+                assert_eq!($ctor(-1).checked_ilog2(), None);
+
+                assert_eq!($ctor(-5).abs(), $ctor(5));
+                assert_eq!(<$scalar>::MIN.abs(), <$scalar>::MAX);
+                assert_eq!($ctor(-5).unsigned_abs().into_inner(), 5);
+                assert_eq!(
+                    <$scalar>::MIN.unsigned_abs().into_inner(),
+                    <$primitive>::MIN.unsigned_abs(),
+                );
+                assert_eq!($ctor(-5).abs_diff($ctor(3)).into_inner(), 8);
+                assert_eq!($ctor(-5).checked_abs(), Some($ctor(5)));
+                assert_eq!(<$scalar>::MIN.checked_abs(), None);
+                assert_eq!($ctor(-5).signum(), $ctor(-1));
+                assert_eq!(<$scalar>::ZERO.signum(), <$scalar>::ZERO);
+                assert_eq!($ctor(5).signum(), $ctor(1));
+                assert!($ctor(5).is_positive());
+                assert!(!$ctor(0).is_positive());
+                assert!($ctor(-5).is_negative());
+                assert!(!$ctor(0).is_negative());
+                assert_eq!($ctor(16).checked_isqrt(), Some($ctor(4)));
+                assert_eq!($ctor(-1).checked_isqrt(), None);
             }
 
             #[test]

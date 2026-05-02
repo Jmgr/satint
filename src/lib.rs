@@ -340,6 +340,8 @@ macro_rules! scalars {
             }
 
             impl $ty<$primitive> {
+                /// The size of this scalar type in bits.
+                pub const BITS: u32 = <$primitive>::BITS;
                 /// The minimum representable value for this scalar type.
                 pub const MIN: Self = $ctor(<$primitive>::MIN);
                 /// The maximum representable value for this scalar type.
@@ -349,6 +351,154 @@ macro_rules! scalars {
                 /// The multiplicative identity value.
                 pub const ONE: Self = $ctor(1);
 
+                /// Returns the number of ones in the binary representation.
+                #[inline]
+                #[must_use]
+                pub const fn count_ones(self) -> u32 {
+                    self.into_inner().count_ones()
+                }
+
+                /// Returns the number of zeros in the binary representation.
+                #[inline]
+                #[must_use]
+                pub const fn count_zeros(self) -> u32 {
+                    self.into_inner().count_zeros()
+                }
+
+                /// Returns the number of leading zeros in the binary representation.
+                #[inline]
+                #[must_use]
+                pub const fn leading_zeros(self) -> u32 {
+                    self.into_inner().leading_zeros()
+                }
+
+                /// Returns the number of leading ones in the binary representation.
+                #[inline]
+                #[must_use]
+                pub const fn leading_ones(self) -> u32 {
+                    self.into_inner().leading_ones()
+                }
+
+                /// Returns the number of trailing zeros in the binary representation.
+                #[inline]
+                #[must_use]
+                pub const fn trailing_zeros(self) -> u32 {
+                    self.into_inner().trailing_zeros()
+                }
+
+                /// Returns the number of trailing ones in the binary representation.
+                #[inline]
+                #[must_use]
+                pub const fn trailing_ones(self) -> u32 {
+                    self.into_inner().trailing_ones()
+                }
+
+                /// Reverses the order of bits.
+                #[inline]
+                #[must_use]
+                pub const fn reverse_bits(self) -> Self {
+                    $ctor(self.into_inner().reverse_bits())
+                }
+
+                /// Shifts bits to the left by `n`, wrapping the truncated bits to
+                /// the end of the result.
+                #[inline]
+                #[must_use]
+                pub const fn rotate_left(self, n: u32) -> Self {
+                    $ctor(self.into_inner().rotate_left(n))
+                }
+
+                /// Shifts bits to the right by `n`, wrapping the truncated bits to
+                /// the beginning of the result.
+                #[inline]
+                #[must_use]
+                pub const fn rotate_right(self, n: u32) -> Self {
+                    $ctor(self.into_inner().rotate_right(n))
+                }
+
+                /// Reverses the byte order.
+                #[inline]
+                #[must_use]
+                pub const fn swap_bytes(self) -> Self {
+                    $ctor(self.into_inner().swap_bytes())
+                }
+
+                /// Converts from big-endian to the target's native endian.
+                #[inline]
+                #[must_use]
+                pub const fn from_be(value: Self) -> Self {
+                    $ctor(<$primitive>::from_be(value.into_inner()))
+                }
+
+                /// Converts from little-endian to the target's native endian.
+                #[inline]
+                #[must_use]
+                pub const fn from_le(value: Self) -> Self {
+                    $ctor(<$primitive>::from_le(value.into_inner()))
+                }
+
+                /// Converts `self` to big-endian from the target's native endian.
+                #[inline]
+                #[must_use]
+                pub const fn to_be(self) -> Self {
+                    $ctor(self.into_inner().to_be())
+                }
+
+                /// Converts `self` to little-endian from the target's native endian.
+                #[inline]
+                #[must_use]
+                pub const fn to_le(self) -> Self {
+                    $ctor(self.into_inner().to_le())
+                }
+
+                /// Returns the memory representation as a byte array in big-endian order.
+                #[inline]
+                #[must_use]
+                pub const fn to_be_bytes(self) -> [u8; core::mem::size_of::<$primitive>()] {
+                    self.into_inner().to_be_bytes()
+                }
+
+                /// Returns the memory representation as a byte array in little-endian order.
+                #[inline]
+                #[must_use]
+                pub const fn to_le_bytes(self) -> [u8; core::mem::size_of::<$primitive>()] {
+                    self.into_inner().to_le_bytes()
+                }
+
+                /// Returns the memory representation as a byte array in native-endian order.
+                #[inline]
+                #[must_use]
+                pub const fn to_ne_bytes(self) -> [u8; core::mem::size_of::<$primitive>()] {
+                    self.into_inner().to_ne_bytes()
+                }
+
+                /// Creates a scalar from a byte array in big-endian order.
+                #[inline]
+                #[must_use]
+                pub const fn from_be_bytes(
+                    bytes: [u8; core::mem::size_of::<$primitive>()],
+                ) -> Self {
+                    $ctor(<$primitive>::from_be_bytes(bytes))
+                }
+
+                /// Creates a scalar from a byte array in little-endian order.
+                #[inline]
+                #[must_use]
+                pub const fn from_le_bytes(
+                    bytes: [u8; core::mem::size_of::<$primitive>()],
+                ) -> Self {
+                    $ctor(<$primitive>::from_le_bytes(bytes))
+                }
+
+                /// Creates a scalar from a byte array in native-endian order.
+                #[inline]
+                #[must_use]
+                pub const fn from_ne_bytes(
+                    bytes: [u8; core::mem::size_of::<$primitive>()],
+                ) -> Self {
+                    $ctor(<$primitive>::from_ne_bytes(bytes))
+                }
+
                 /// Divides two scalar values, returning `None` on division by zero
                 /// or primitive signed overflow.
                 ///
@@ -357,6 +507,17 @@ macro_rules! scalars {
                 #[must_use]
                 pub const fn checked_div(self, rhs: Self) -> Option<Self> {
                     match self.into_inner().checked_div(rhs.into_inner()) {
+                        Some(v) => Some($ctor(v)),
+                        None => None,
+                    }
+                }
+
+                /// Calculates Euclidean division, returning `None` on division by
+                /// zero or primitive signed overflow.
+                #[inline]
+                #[must_use]
+                pub const fn checked_div_euclid(self, rhs: Self) -> Option<Self> {
+                    match self.into_inner().checked_div_euclid(rhs.into_inner()) {
                         Some(v) => Some($ctor(v)),
                         None => None,
                     }
@@ -373,6 +534,45 @@ macro_rules! scalars {
                         Some(v) => Some($ctor(v)),
                         None => None,
                     }
+                }
+
+                /// Calculates the least nonnegative remainder, returning `None`
+                /// on division by zero or primitive signed overflow.
+                #[inline]
+                #[must_use]
+                pub const fn checked_rem_euclid(self, rhs: Self) -> Option<Self> {
+                    match self.into_inner().checked_rem_euclid(rhs.into_inner()) {
+                        Some(v) => Some($ctor(v)),
+                        None => None,
+                    }
+                }
+
+                /// Raises `self` to the power of `exp`, saturating at numeric bounds.
+                #[inline]
+                #[must_use]
+                pub const fn pow(self, exp: u32) -> Self {
+                    $ctor(self.into_inner().saturating_pow(exp))
+                }
+
+                /// Returns the base-`base` logarithm, or `None` if the logarithm is undefined.
+                #[inline]
+                #[must_use]
+                pub const fn checked_ilog(self, base: $primitive) -> Option<u32> {
+                    self.into_inner().checked_ilog(base)
+                }
+
+                /// Returns the base-2 logarithm, or `None` if the logarithm is undefined.
+                #[inline]
+                #[must_use]
+                pub const fn checked_ilog2(self) -> Option<u32> {
+                    self.into_inner().checked_ilog2()
+                }
+
+                /// Returns the base-10 logarithm, or `None` if the logarithm is undefined.
+                #[inline]
+                #[must_use]
+                pub const fn checked_ilog10(self) -> Option<u32> {
+                    self.into_inner().checked_ilog10()
                 }
             }
 
