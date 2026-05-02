@@ -92,15 +92,13 @@ assert_eq!(Si32::MIN.checked_div(si32(-1)), None);
 Lossless widening conversions use `From` / `Into`:
 
 ```rust
-use satint::{Si32, Su16, Su32, si8, su8};
+use satint::{Si32, Su32, si8, su8};
 
 let signed: Si32 = si8(-5).into();
 let unsigned: Su32 = su8(200).into();
-let unsigned_to_signed: Si32 = Su16::new(40_000).into();
 
 assert_eq!(signed.into_inner(), -5);
 assert_eq!(unsigned.into_inner(), 200);
-assert_eq!(unsigned_to_signed.into_inner(), 40_000);
 ```
 
 Fallible narrowing and cross-sign conversions use `TryFrom`:
@@ -118,38 +116,37 @@ assert!(Si8::try_from(si16(300)).is_err());
 Clamping conversions use `SaturatingFrom` or `SaturatingInto`:
 
 ```rust
-use satint::{SaturatingFrom, SaturatingInto, Si8, Su8, si16, su16};
+use satint::{SaturatingInto, Si8, Su8, si16, su16};
 
-assert_eq!(Su8::saturating_from(su16(300)).into_inner(), u8::MAX);
-assert_eq!(Si8::saturating_from(si16(-300)).into_inner(), i8::MIN);
+let unsigned: Su8 = su16(999).saturating_into();
+let signed: Si8 = si16(-300).saturating_into();
 
-let value: Su8 = su16(999).saturating_into();
-assert_eq!(value.into_inner(), u8::MAX);
+assert_eq!(unsigned, Su8::MAX);
+assert_eq!(signed, Si8::MIN);
 ```
 
-Same-width signedness flips have shorthand inherent methods that forward to the
-saturating conversions above:
+Same-width signedness flips have shorthand inherent methods:
 
 ```rust
 use satint::{Si32, Su32, si32, su32};
 
-assert_eq!(su32(42).to_signed(), si32(42));
 assert_eq!(Su32::MAX.to_signed(), Si32::MAX);
-
-assert_eq!(si32(42).to_unsigned(), su32(42));
 assert_eq!(si32(-1).to_unsigned(), Su32::ZERO);
+
+assert_eq!(su32(42).to_signed(), si32(42));
+assert_eq!(si32(42).to_unsigned(), su32(42));
 ```
 
 Primitive integers can also be used as the source:
 
 ```rust
-use satint::{SaturatingInto, Si32, Su32};
+use satint::{SaturatingInto, Su8};
 
-let signed: Si32 = 42_i32.saturating_into();
-let unsigned: Su32 = 42_i32.saturating_into();
+let low: Su8 = (-1_i32).saturating_into();
+let high: Su8 = 300_i32.saturating_into();
 
-assert_eq!(signed.into_inner(), 42);
-assert_eq!(unsigned.into_inner(), 42);
+assert_eq!(low, Su8::ZERO);
+assert_eq!(high, Su8::MAX);
 ```
 
 ## Float Conversions

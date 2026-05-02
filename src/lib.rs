@@ -32,10 +32,12 @@
 //! Lossy conversions can either saturate or fail:
 //!
 //! ```
-//! use satint::{SaturatingFrom, Si8, Su8, su16};
+//! use satint::{SaturatingInto, Si8, Su8, su8, su16};
 //!
-//! assert_eq!(Su8::saturating_from(su16(300)), Su8::MAX);
-//! assert!(Si8::try_from(200.0_f32).is_err());
+//! let clamped: Su8 = su16(300).saturating_into();
+//! assert_eq!(clamped, Su8::MAX);
+//! assert_eq!(Su8::MAX.to_signed(), Si8::MAX);
+//! assert!(Si8::try_from(su8(200)).is_err());
 //! ```
 //!
 //! See the [README](https://github.com/Jmgr/satint#saturating-integers) for more examples.

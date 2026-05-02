@@ -509,6 +509,15 @@ macro_rules! impl_same_width_signedness {
             /// Converts this unsigned scalar to the signed scalar of the
             /// same width, saturating at the signed type's `MAX` when the
             /// value does not fit.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// use satint::{Su8, Si8, su8, si8};
+            ///
+            /// assert_eq!(su8(42).to_signed(), si8(42));
+            /// assert_eq!(Su8::MAX.to_signed(), Si8::MAX);
+            /// ```
             #[must_use]
             #[inline]
             pub fn to_signed(self) -> Si<$signed> {
@@ -519,6 +528,15 @@ macro_rules! impl_same_width_signedness {
         impl Si<$signed> {
             /// Converts this signed scalar to the unsigned scalar of the
             /// same width, saturating negative values to `0`.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// use satint::{Si8, Su8, si8, su8};
+            ///
+            /// assert_eq!(si8(42).to_unsigned(), su8(42));
+            /// assert_eq!(si8(-1).to_unsigned(), Su8::ZERO);
+            /// ```
             #[must_use]
             #[inline]
             pub fn to_unsigned(self) -> Su<$unsigned> {
