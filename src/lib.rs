@@ -7,6 +7,38 @@
 //! integer types and use saturating arithmetic for the implemented arithmetic
 //! operators. Conversions that may lose information are available through
 //! [`SaturatingFrom`] and [`TryFrom`].
+//!
+//! # Examples
+//!
+//! Basic arithmetic saturates at the primitive bounds:
+//!
+//! ```
+//! use satint::{Si32, Su8, su8};
+//!
+//! assert_eq!((su8(250) + 10).into_inner(), u8::MAX);
+//! assert_eq!((su8(0) - 1).into_inner(), 0);
+//! assert_eq!((Si32::MAX + 1).into_inner(), i32::MAX);
+//! ```
+//!
+//! Division and remainder are checked methods so errors stay explicit:
+//!
+//! ```
+//! use satint::{DivError, TryDiv, si32};
+//!
+//! assert_eq!(si32(20).checked_div(si32(3)), Some(si32(6)));
+//! assert_eq!(si32(20).try_div(si32(0)), Err(DivError::DivisionByZero));
+//! ```
+//!
+//! Lossy conversions can either saturate or fail:
+//!
+//! ```
+//! use satint::{SaturatingFrom, Si8, Su8, su16};
+//!
+//! assert_eq!(Su8::saturating_from(su16(300)), Su8::MAX);
+//! assert!(Si8::try_from(200.0_f32).is_err());
+//! ```
+//!
+//! See the [README](https://github.com/Jmgr/satint#saturating-integers) for more examples.
 
 /// Saturating conversion traits and cross-width conversion impls.
 pub mod convert;
