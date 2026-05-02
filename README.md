@@ -231,8 +231,6 @@ assert_eq!(values.iter().product::<Su32>().into_inner(), 24);
 ## Optional `serde` and `rand` Support
 
 ```rust
-# #[cfg(feature = "rand")]
-# {
 use rand::{RngExt, SeedableRng, rngs::SmallRng};
 use satint::{si16, su8};
 
@@ -245,7 +243,6 @@ assert!(signed < si16(10));
 let unsigned = rng.random_range(su8(1)..=su8(6));
 assert!(unsigned >= su8(1));
 assert!(unsigned <= su8(6));
-# }
 ```
 
 ## `no_std`
