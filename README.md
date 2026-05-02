@@ -1,4 +1,4 @@
-# Saturating integer scalar wrappers
+# Saturating integers
 
 `satint` provides small `no_std`, no-alloc wrappers around Rust primitive
 integers that use saturating arithmetic for ordinary integer operations.
