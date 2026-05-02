@@ -1,5 +1,6 @@
 #![no_std]
 #![forbid(unsafe_code)]
+#![cfg_attr(doctest, doc = include_str!("../README.md"))]
 //! Saturating scalar wrappers for signed and unsigned primitive integers.
 //!
 //! The concrete aliases, such as [`Si32`] and [`Su32`], wrap Rust's primitive
