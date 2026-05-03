@@ -1,3 +1,16 @@
+## [0.2.3] - 2026-05-03
+
+### 🚀 Features
+
+- Add missing From impl for primitives
+
+### 📚 Documentation
+
+- Simplify package description
+
+### ⚙️ Miscellaneous Tasks
+
+- Update version
 ## [0.2.2] - 2026-05-03
 
 ### 🚀 Features
@@ -11,6 +24,7 @@
 ### ⚙️ Miscellaneous Tasks
 
 - Update version
+- Update changelog
 ## [0.2.1] - 2026-05-02
 
 ### 🚀 Features
