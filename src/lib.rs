@@ -298,6 +298,66 @@ macro_rules! define_wrapper {
 
 pub(crate) use define_wrapper;
 
+macro_rules! impl_pointer_sized_saturating_from_wrapper {
+    (Si, $alias:ty, $primitive:ty) => {
+        impl crate::convert::SaturatingFrom<$alias> for isize {
+            #[inline]
+            fn saturating_from(value: $alias) -> Self {
+                let v = value.into_inner() as i128;
+                if v > (isize::MAX as i128) {
+                    isize::MAX
+                } else if v < (isize::MIN as i128) {
+                    isize::MIN
+                } else {
+                    value.into_inner() as isize
+                }
+            }
+        }
+
+        impl crate::convert::SaturatingFrom<$alias> for usize {
+            #[inline]
+            fn saturating_from(value: $alias) -> Self {
+                let v = value.into_inner();
+                if v <= 0 {
+                    0
+                } else if (v as u128) > (usize::MAX as u128) {
+                    usize::MAX
+                } else {
+                    v as usize
+                }
+            }
+        }
+    };
+
+    (Su, $alias:ty, $primitive:ty) => {
+        impl crate::convert::SaturatingFrom<$alias> for isize {
+            #[inline]
+            fn saturating_from(value: $alias) -> Self {
+                let v = value.into_inner();
+                if (v as u128) > (isize::MAX as u128) {
+                    isize::MAX
+                } else {
+                    v as isize
+                }
+            }
+        }
+
+        impl crate::convert::SaturatingFrom<$alias> for usize {
+            #[inline]
+            fn saturating_from(value: $alias) -> Self {
+                let v = value.into_inner();
+                if (v as u128) > (usize::MAX as u128) {
+                    usize::MAX
+                } else {
+                    v as usize
+                }
+            }
+        }
+    };
+}
+
+pub(crate) use impl_pointer_sized_saturating_from_wrapper;
+
 macro_rules! scalars {
     ($($ty:ident, $alias:ident, $ctor:ident, $primitive:ty);+ $(;)?) => {
         $(
@@ -310,6 +370,8 @@ macro_rules! scalars {
                     value.into_inner()
                 }
             }
+
+            $crate::impl_pointer_sized_saturating_from_wrapper!($ty, $alias, $primitive);
 
             impl PartialEq<$alias> for $primitive {
                 #[inline]

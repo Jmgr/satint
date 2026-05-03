@@ -120,9 +120,11 @@ use satint::{SaturatingInto, Si8, Su8, si16, su16};
 
 let unsigned: Su8 = su16(999).saturating_into();
 let signed: Si8 = si16(-300).saturating_into();
+let pointer_sized: usize = Si8::MIN.saturating_into();
 
 assert_eq!(unsigned, Su8::MAX);
 assert_eq!(signed, Si8::MIN);
+assert_eq!(pointer_sized, 0);
 ```
 
 Same-width signedness flips have shorthand inherent methods:
@@ -230,7 +232,7 @@ assert_eq!(values.iter().product::<Su32>().into_inner(), 24);
 
 ## Optional `serde` and `rand` Support
 
-```rust
+```rust,ignore
 use rand::{RngExt, SeedableRng, rngs::SmallRng};
 use satint::{si16, su8};
 

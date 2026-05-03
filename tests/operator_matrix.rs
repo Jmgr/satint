@@ -902,6 +902,54 @@ signed_narrowing_conversion_tests!(si16_si8_narrowing, Si16, si16, Si8, si8);
 signed_to_unsigned_conversion_tests!(si16_su8_fallible, Si16, si16, Su8, su8);
 unsigned_to_signed_fallible_conversion_tests!(su16_si8_fallible, Su16, su16, Si8, si8);
 
+#[test]
+fn pointer_sized_saturating_conversions() {
+    assert_eq!(
+        <usize as SaturatingInto<Su8>>::saturating_into(42_usize),
+        su8(42)
+    );
+    assert_eq!(
+        <isize as SaturatingInto<Su8>>::saturating_into(42_isize),
+        su8(42)
+    );
+    assert_eq!(Su8::saturating_from(300_usize), Su8::MAX);
+    assert_eq!(Su8::saturating_from(-1_isize), Su8::ZERO);
+    assert_eq!(Su8::saturating_from(300_isize), Su8::MAX);
+
+    assert_eq!(
+        <usize as SaturatingInto<Si8>>::saturating_into(42_usize),
+        si8(42)
+    );
+    assert_eq!(
+        <isize as SaturatingInto<Si8>>::saturating_into(-42_isize),
+        si8(-42)
+    );
+    assert_eq!(Si8::saturating_from(200_usize), Si8::MAX);
+    assert_eq!(Si8::saturating_from(200_isize), Si8::MAX);
+    assert_eq!(Si8::saturating_from(-200_isize), Si8::MIN);
+
+    assert_eq!(usize::saturating_from(su8(42)), 42_usize);
+    assert_eq!(usize::saturating_from(si8(42)), 42_usize);
+    assert_eq!(usize::saturating_from(si8(-1)), 0_usize);
+
+    assert_eq!(isize::saturating_from(su8(42)), 42_isize);
+    assert_eq!(isize::saturating_from(si8(-42)), -42_isize);
+
+    assert_eq!(
+        Su128::saturating_from(usize::MAX),
+        su128(usize::MAX as u128)
+    );
+    assert_eq!(
+        Si128::saturating_from(isize::MIN),
+        si128(isize::MIN as i128)
+    );
+    assert_eq!(usize::saturating_from(su128(u128::MAX)), usize::MAX);
+    assert_eq!(usize::saturating_from(si128(i128::MAX)), usize::MAX);
+    assert_eq!(isize::saturating_from(su128(u128::MAX)), isize::MAX);
+    assert_eq!(isize::saturating_from(si128(i128::MAX)), isize::MAX);
+    assert_eq!(isize::saturating_from(si128(i128::MIN)), isize::MIN);
+}
+
 macro_rules! float_to_signed_tests {
     ($module:ident, $float:ty, $scalar:ty, $ctor:ident, $primitive:ty) => {
         mod $module {
