@@ -1210,6 +1210,48 @@ same_width_signedness_tests!(signedness_64, Su64, su64, u64, Si64, si64, i64);
 same_width_signedness_tests!(signedness_128, Su128, su128, u128, Si128, si128, i128);
 
 #[test]
+fn from_narrower_unsigned_primitive_to_su() {
+    assert_eq!(Su16::from(7_u8), su16(7));
+    assert_eq!(Su32::from(7_u8), su32(7));
+    assert_eq!(Su32::from(7_u16), su32(7));
+    assert_eq!(Su64::from(7_u8), su64(7));
+    assert_eq!(Su64::from(7_u16), su64(7));
+    assert_eq!(Su64::from(7_u32), su64(7));
+    assert_eq!(Su128::from(7_u8), su128(7));
+    assert_eq!(Su128::from(7_u16), su128(7));
+    assert_eq!(Su128::from(7_u32), su128(7));
+    assert_eq!(Su128::from(7_u64), su128(7));
+}
+
+#[test]
+fn from_narrower_signed_primitive_to_si() {
+    assert_eq!(Si16::from(-7_i8), si16(-7));
+    assert_eq!(Si32::from(-7_i8), si32(-7));
+    assert_eq!(Si32::from(-7_i16), si32(-7));
+    assert_eq!(Si64::from(-7_i8), si64(-7));
+    assert_eq!(Si64::from(-7_i16), si64(-7));
+    assert_eq!(Si64::from(-7_i32), si64(-7));
+    assert_eq!(Si128::from(-7_i8), si128(-7));
+    assert_eq!(Si128::from(-7_i16), si128(-7));
+    assert_eq!(Si128::from(-7_i32), si128(-7));
+    assert_eq!(Si128::from(-7_i64), si128(-7));
+}
+
+#[test]
+fn from_narrower_unsigned_primitive_to_si() {
+    assert_eq!(Si16::from(200_u8), si16(200));
+    assert_eq!(Si32::from(200_u8), si32(200));
+    assert_eq!(Si32::from(40_000_u16), si32(40_000));
+    assert_eq!(Si64::from(200_u8), si64(200));
+    assert_eq!(Si64::from(40_000_u16), si64(40_000));
+    assert_eq!(Si64::from(4_000_000_000_u32), si64(4_000_000_000));
+    assert_eq!(Si128::from(200_u8), si128(200));
+    assert_eq!(Si128::from(40_000_u16), si128(40_000));
+    assert_eq!(Si128::from(4_000_000_000_u32), si128(4_000_000_000));
+    assert_eq!(Si128::from(u64::MAX), si128(u64::MAX as i128));
+}
+
+#[test]
 fn div_error_display_and_error_trait() {
     assert_eq!(format!("{}", DivError::DivisionByZero), "division by zero");
     assert_eq!(format!("{}", DivError::Overflow), "arithmetic overflow");

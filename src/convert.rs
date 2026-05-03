@@ -240,6 +240,54 @@ impl_unsigned_to_signed_from!(i32 => u8, u16);
 impl_unsigned_to_signed_from!(i64 => u8, u16, u32);
 impl_unsigned_to_signed_from!(i128 => u8, u16, u32, u64);
 
+// -- Lossless primitive → wrapper widening ------------------------------
+//
+// The blanket `From<T> for $wrapper<T>` (in `define_wrapper!`) covers the
+// same-width case. These impls extend that to narrower primitives whose
+// range is fully contained in the destination's range, so e.g.
+// `Si32::from(42_i16)` works the same way `Si32::from(Si16::from(42))` does.
+
+macro_rules! impl_same_sign_widening_from_primitive {
+    ($wrap:ident; $dst:ty => $($src:ty),+ $(,)?) => {
+        $(
+            impl From<$src> for $wrap<$dst> {
+                #[inline]
+                fn from(value: $src) -> Self {
+                    Self::new(value as $dst)
+                }
+            }
+        )+
+    };
+}
+
+impl_same_sign_widening_from_primitive!(Su; u16 => u8);
+impl_same_sign_widening_from_primitive!(Su; u32 => u8, u16);
+impl_same_sign_widening_from_primitive!(Su; u64 => u8, u16, u32);
+impl_same_sign_widening_from_primitive!(Su; u128 => u8, u16, u32, u64);
+
+impl_same_sign_widening_from_primitive!(Si; i16 => i8);
+impl_same_sign_widening_from_primitive!(Si; i32 => i8, i16);
+impl_same_sign_widening_from_primitive!(Si; i64 => i8, i16, i32);
+impl_same_sign_widening_from_primitive!(Si; i128 => i8, i16, i32, i64);
+
+macro_rules! impl_unsigned_to_signed_from_primitive {
+    ($signed:ty => $($unsigned:ty),+ $(,)?) => {
+        $(
+            impl From<$unsigned> for Si<$signed> {
+                #[inline]
+                fn from(value: $unsigned) -> Self {
+                    Self::new(value as $signed)
+                }
+            }
+        )+
+    };
+}
+
+impl_unsigned_to_signed_from_primitive!(i16 => u8);
+impl_unsigned_to_signed_from_primitive!(i32 => u8, u16);
+impl_unsigned_to_signed_from_primitive!(i64 => u8, u16, u32);
+impl_unsigned_to_signed_from_primitive!(i128 => u8, u16, u32, u64);
+
 // -- Fallible / saturating conversions ------------------------------------
 //
 // Every pair below gets two impls:
