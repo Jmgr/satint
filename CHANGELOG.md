@@ -1,3 +1,16 @@
+## [0.2.2] - 2026-05-03
+
+### 🚀 Features
+
+- Add conversions from/to usize and isize
+
+### 🐛 Bug Fixes
+
+- Rand example in readme
+
+### ⚙️ Miscellaneous Tasks
+
+- Update version
 ## [0.2.1] - 2026-05-02
 
 ### 🚀 Features
@@ -11,6 +24,7 @@
 ### ⚙️ Miscellaneous Tasks
 
 - Update version
+- Update changelog
 ## [0.2.0] - 2026-05-02
 
 ### 🚀 Features
