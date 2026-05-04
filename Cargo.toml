@@ -17,6 +17,7 @@ resolver = "2"
 default = []
 rand = ["dep:rand"]
 serde = ["dep:serde"]
+panicking-ops = []
 
 [dependencies]
 rand = { version = "0.10.1", default-features = false, optional = true }
@@ -50,11 +51,13 @@ little_endian_bytes = "allow"
 modulo_arithmetic = "allow"
 default_numeric_fallback = "allow"
 implicit_return = "allow"
+integer_division_remainder_used = "allow"
 min_ident_chars = "allow"
 missing_docs_in_private_items = "allow"
 missing_trait_methods = "allow"
 pub_use = "allow"
 pub_with_shorthand = "allow"
+question_mark_used = "allow"
 separated_literal_suffix = "allow"
 single_char_lifetime_names = "allow"
 std_instead_of_core = "allow"

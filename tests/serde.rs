@@ -1,6 +1,6 @@
 #![cfg(feature = "serde")]
 
-use satint::{Si, Si8, Si16, Si32, Si64, Si128, Su, Su8, Su16, Su32, Su64, Su128};
+use satint::{Si8, Si16, Si32, Si64, Si128, Su8, Su16, Su32, Su64, Su128};
 
 fn assert_serialize<T: serde::Serialize>() {}
 
@@ -36,14 +36,6 @@ fn concrete_aliases_implement_serde_traits() {
 }
 
 #[test]
-fn generic_wrappers_implement_serde_traits() {
-    assert_serialize::<Si<i32>>();
-    assert_serialize::<Su<u32>>();
-    assert_deserialize::<Si<i32>>();
-    assert_deserialize::<Su<u32>>();
-}
-
-#[test]
 fn round_trips_as_inner_primitive() {
     use serde_test::{Token, assert_tokens};
 
@@ -56,7 +48,4 @@ fn round_trips_as_inner_primitive() {
     assert_tokens(&Su16::new(60_000), &[Token::U16(60_000)]);
     assert_tokens(&Su32::new(3_000_000_000), &[Token::U32(3_000_000_000)]);
     assert_tokens(&Su64::new(u64::MAX), &[Token::U64(u64::MAX)]);
-
-    assert_tokens(&Si::<i32>::new(42), &[Token::I32(42)]);
-    assert_tokens(&Su::<u32>::new(42), &[Token::U32(42)]);
 }
