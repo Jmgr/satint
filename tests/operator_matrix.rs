@@ -18,8 +18,8 @@
 )]
 
 use satint::{
-    DivError, Si8, Si16, Si32, Si64, Si128, Su8, Su16, Su32, Su64, Su128, TryDiv, TryDivAssign,
-    TryRem, TryRemAssign,
+    DivError, SaturatingInto, Si8, Si16, Si32, Si64, Si128, Su8, Su16, Su32, Su64, Su128, TryDiv,
+    TryDivAssign, TryRem, TryRemAssign,
 };
 
 // ============================================================================
@@ -304,6 +304,156 @@ macro_rules! for_each_unsigned_wrapper {
         $body!(Su64);
         $body!(Su128);
     };
+}
+
+macro_rules! for_each_signed_primitive_source_for_destination {
+    ($body:ident, $destination:ty) => {
+        $body!($destination, i8);
+        $body!($destination, i16);
+        $body!($destination, i32);
+        $body!($destination, i64);
+        $body!($destination, i128);
+        $body!($destination, isize);
+    };
+}
+
+macro_rules! for_each_unsigned_primitive_source_for_destination {
+    ($body:ident, $destination:ty) => {
+        $body!($destination, u8);
+        $body!($destination, u16);
+        $body!($destination, u32);
+        $body!($destination, u64);
+        $body!($destination, u128);
+        $body!($destination, usize);
+    };
+}
+
+macro_rules! for_each_signed_primitive_pair {
+    ($body:ident) => {
+        for_each_signed_primitive_source_for_destination!($body, i8);
+        for_each_signed_primitive_source_for_destination!($body, i16);
+        for_each_signed_primitive_source_for_destination!($body, i32);
+        for_each_signed_primitive_source_for_destination!($body, i64);
+        for_each_signed_primitive_source_for_destination!($body, i128);
+        for_each_signed_primitive_source_for_destination!($body, isize);
+    };
+}
+
+macro_rules! for_each_unsigned_primitive_pair {
+    ($body:ident) => {
+        for_each_unsigned_primitive_source_for_destination!($body, u8);
+        for_each_unsigned_primitive_source_for_destination!($body, u16);
+        for_each_unsigned_primitive_source_for_destination!($body, u32);
+        for_each_unsigned_primitive_source_for_destination!($body, u64);
+        for_each_unsigned_primitive_source_for_destination!($body, u128);
+        for_each_unsigned_primitive_source_for_destination!($body, usize);
+    };
+}
+
+macro_rules! for_each_signed_destination_unsigned_source_primitive_pair {
+    ($body:ident) => {
+        for_each_unsigned_primitive_source_for_destination!($body, i8);
+        for_each_unsigned_primitive_source_for_destination!($body, i16);
+        for_each_unsigned_primitive_source_for_destination!($body, i32);
+        for_each_unsigned_primitive_source_for_destination!($body, i64);
+        for_each_unsigned_primitive_source_for_destination!($body, i128);
+        for_each_unsigned_primitive_source_for_destination!($body, isize);
+    };
+}
+
+macro_rules! for_each_unsigned_destination_signed_source_primitive_pair {
+    ($body:ident) => {
+        for_each_signed_primitive_source_for_destination!($body, u8);
+        for_each_signed_primitive_source_for_destination!($body, u16);
+        for_each_signed_primitive_source_for_destination!($body, u32);
+        for_each_signed_primitive_source_for_destination!($body, u64);
+        for_each_signed_primitive_source_for_destination!($body, u128);
+        for_each_signed_primitive_source_for_destination!($body, usize);
+    };
+}
+
+// ============================================================================
+// Primitive conversions.
+// ============================================================================
+
+#[test]
+fn saturating_signed_primitive_to_signed_primitive() {
+    macro_rules! check {
+        ($Destination:ty, $Source:ty) => {{
+            let label = concat!(stringify!($Source), " -> ", stringify!($Destination));
+
+            let min_actual: $Destination = <$Source>::MIN.saturating_into();
+            let min_expected = ((<$Source>::MIN as i128)
+                .clamp(<$Destination>::MIN as i128, <$Destination>::MAX as i128))
+                as $Destination;
+            assert_eq!(min_actual, min_expected, "{label} source MIN");
+
+            let max_actual: $Destination = <$Source>::MAX.saturating_into();
+            let max_expected = ((<$Source>::MAX as i128)
+                .clamp(<$Destination>::MIN as i128, <$Destination>::MAX as i128))
+                as $Destination;
+            assert_eq!(max_actual, max_expected, "{label} source MAX");
+        }};
+    }
+
+    for_each_signed_primitive_pair!(check);
+}
+
+#[test]
+fn saturating_unsigned_primitive_to_unsigned_primitive() {
+    macro_rules! check {
+        ($Destination:ty, $Source:ty) => {{
+            let label = concat!(stringify!($Source), " -> ", stringify!($Destination));
+
+            let zero_actual: $Destination = <$Source>::MIN.saturating_into();
+            assert_eq!(zero_actual, 0, "{label} source MIN");
+
+            let max_actual: $Destination = <$Source>::MAX.saturating_into();
+            let max_expected =
+                (<$Source>::MAX as u128).min(<$Destination>::MAX as u128) as $Destination;
+            assert_eq!(max_actual, max_expected, "{label} source MAX");
+        }};
+    }
+
+    for_each_unsigned_primitive_pair!(check);
+}
+
+#[test]
+fn saturating_signed_primitive_to_unsigned_primitive() {
+    macro_rules! check {
+        ($Destination:ty, $Source:ty) => {{
+            let label = concat!(stringify!($Source), " -> ", stringify!($Destination));
+
+            let min_actual: $Destination = <$Source>::MIN.saturating_into();
+            assert_eq!(min_actual, 0, "{label} source MIN");
+
+            let max_actual: $Destination = <$Source>::MAX.saturating_into();
+            let max_expected =
+                (<$Source>::MAX as u128).min(<$Destination>::MAX as u128) as $Destination;
+            assert_eq!(max_actual, max_expected, "{label} source MAX");
+        }};
+    }
+
+    for_each_unsigned_destination_signed_source_primitive_pair!(check);
+}
+
+#[test]
+fn saturating_unsigned_primitive_to_signed_primitive() {
+    macro_rules! check {
+        ($Destination:ty, $Source:ty) => {{
+            let label = concat!(stringify!($Source), " -> ", stringify!($Destination));
+
+            let zero_actual: $Destination = <$Source>::MIN.saturating_into();
+            assert_eq!(zero_actual, 0, "{label} source MIN");
+
+            let max_actual: $Destination = <$Source>::MAX.saturating_into();
+            let max_expected =
+                (<$Source>::MAX as u128).min(<$Destination>::MAX as u128) as $Destination;
+            assert_eq!(max_actual, max_expected, "{label} source MAX");
+        }};
+    }
+
+    for_each_signed_destination_unsigned_source_primitive_pair!(check);
 }
 
 // ============================================================================

@@ -45,17 +45,16 @@
 //! assert_eq!(su8(42).to_signed(), Si8::new(42));
 //! ```
 
+mod common;
 mod convert;
-mod si;
-mod su;
-
+mod ops;
+mod primitives;
 #[cfg(feature = "rand")]
 mod rand;
 #[cfg(feature = "serde")]
 mod serde;
-
-mod common;
-mod ops;
+mod si;
+mod su;
 
 pub use common::{SaturatingFrom, SaturatingInto};
 pub use ops::{DivError, TryDiv, TryDivAssign, TryRem, TryRemAssign};
