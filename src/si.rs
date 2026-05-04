@@ -24,28 +24,58 @@ macro_rules! generate_signed_functions {
     ($($name:ident; $unsigned_name:ident)+) => {
         $(
             impl $name {
-                /// Computes the absolute value.
+                #[doc = concat!(
+                    "Computes the absolute value, saturating at [`", stringify!($name), "::MAX`].\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert_eq!(", stringify!($name), "::new(-5).abs(), ", stringify!($name), "::new(5));\n",
+                    "assert_eq!(", stringify!($name), "::MIN.abs(), ", stringify!($name), "::MAX);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn abs(self) -> Self {
                     Self::new(self.0.0.saturating_abs())
                 }
 
-                /// Computes the absolute value as an unsigned scalar.
+                #[doc = concat!(
+                    "Computes the absolute value as an unsigned scalar.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::{", stringify!($name), ", ", stringify!($unsigned_name), "};\n\n",
+                    "assert_eq!(", stringify!($name), "::new(-5).unsigned_abs(), ", stringify!($unsigned_name), "::new(5));\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn unsigned_abs(self) -> $unsigned_name {
                     $unsigned_name::new(self.into_inner().unsigned_abs())
                 }
 
-                /// Computes the absolute difference between `self` and `rhs`.
+                #[doc = concat!(
+                    "Computes the absolute difference between `self` and `rhs`.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::{", stringify!($name), ", ", stringify!($unsigned_name), "};\n\n",
+                    "assert_eq!(", stringify!($name), "::new(-10).abs_diff(", stringify!($name), "::new(5)), ", stringify!($unsigned_name), "::new(15));\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn abs_diff(self, rhs: Self) -> $unsigned_name {
                     $unsigned_name::new(self.into_inner().abs_diff(rhs.into_inner()))
                 }
 
-                /// Computes the absolute value, returning `None` for `MIN`.
+                #[doc = concat!(
+                    "Computes the absolute value, returning `None` for [`", stringify!($name), "::MIN`].\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert_eq!(", stringify!($name), "::new(-5).checked_abs(), Some(", stringify!($name), "::new(5)));\n",
+                    "assert_eq!(", stringify!($name), "::MIN.checked_abs(), None);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn checked_abs(self) -> Option<Self> {
@@ -55,28 +85,61 @@ macro_rules! generate_signed_functions {
                     }
                 }
 
-                /// Returns a number representing the sign of `self`.
+                #[doc = concat!(
+                    "Returns a number representing the sign of `self`.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert_eq!(", stringify!($name), "::new(-5).signum(), ", stringify!($name), "::new(-1));\n",
+                    "assert_eq!(", stringify!($name), "::ZERO.signum(), ", stringify!($name), "::ZERO);\n",
+                    "assert_eq!(", stringify!($name), "::new(5).signum(), ", stringify!($name), "::ONE);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn signum(self) -> Self {
                     Self::new(self.into_inner().signum())
                 }
 
-                /// Returns `true` if `self` is positive.
+                #[doc = concat!(
+                    "Returns `true` if `self` is positive.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert!(", stringify!($name), "::new(5).is_positive());\n",
+                    "assert!(!", stringify!($name), "::new(-5).is_positive());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn is_positive(self) -> bool {
                     self.into_inner().is_positive()
                 }
 
-                /// Returns `true` if `self` is negative.
+                #[doc = concat!(
+                    "Returns `true` if `self` is negative.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert!(", stringify!($name), "::new(-5).is_negative());\n",
+                    "assert!(!", stringify!($name), "::new(5).is_negative());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn is_negative(self) -> bool {
                     self.into_inner().is_negative()
                 }
 
-                /// Returns the integer square root, or `None` if `self` is negative.
+                #[doc = concat!(
+                    "Returns the integer square root, or `None` if `self` is negative.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert_eq!(", stringify!($name), "::new(16).checked_isqrt(), Some(", stringify!($name), "::new(4)));\n",
+                    "assert_eq!(", stringify!($name), "::new(-1).checked_isqrt(), None);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn checked_isqrt(self) -> Option<Self> {
@@ -86,6 +149,15 @@ macro_rules! generate_signed_functions {
                     }
                 }
 
+                #[doc = concat!(
+                    "Converts to the same-width unsigned wrapper, saturating negative values to zero.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::{", stringify!($name), ", ", stringify!($unsigned_name), "};\n\n",
+                    "assert_eq!(", stringify!($name), "::new(42).to_unsigned(), ", stringify!($unsigned_name), "::new(42));\n",
+                    "assert_eq!(", stringify!($name), "::new(-1).to_unsigned(), ", stringify!($unsigned_name), "::ZERO);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn to_unsigned(self) -> $unsigned_name {

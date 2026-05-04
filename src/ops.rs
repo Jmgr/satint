@@ -11,6 +11,14 @@ use crate::{
 };
 
 /// Error returned by fallible division and remainder operations.
+///
+/// # Examples
+///
+/// ```
+/// use satint::{DivError, TryDiv, si8};
+///
+/// assert_eq!(si8(10).try_div(0_i8), Err(DivError::DivisionByZero));
+/// ```
 #[expect(
     clippy::exhaustive_enums,
     reason = "division failures are limited to zero divisors and primitive overflow"
@@ -48,6 +56,15 @@ const fn u128_saturating_sub_signed(lhs: u128, rhs: i128) -> u128 {
 }
 
 /// Fallible division that distinguishes division by zero from overflow.
+///
+/// # Examples
+///
+/// ```
+/// use satint::{DivError, TryDiv, si8, si16};
+///
+/// assert_eq!(si8(10).try_div(si16(2)), Ok(si8(5)));
+/// assert_eq!(si8(10).try_div(0_i8), Err(DivError::DivisionByZero));
+/// ```
 pub trait TryDiv<Rhs = Self> {
     /// Result type produced by the division.
     type Output;
@@ -58,10 +75,27 @@ pub trait TryDiv<Rhs = Self> {
     ///
     /// Returns [`DivError::DivisionByZero`] when `rhs` is zero and
     /// [`DivError::Overflow`] when the primitive operation overflows.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use satint::{TryDiv, si8};
+    ///
+    /// assert_eq!(si8(12).try_div(3_i8), Ok(si8(4)));
+    /// ```
     fn try_div(self, rhs: Rhs) -> Result<Self::Output, DivError>;
 }
 
 /// Fallible remainder that distinguishes division by zero from overflow.
+///
+/// # Examples
+///
+/// ```
+/// use satint::{DivError, TryRem, si8};
+///
+/// assert_eq!(si8(10).try_rem(3_i8), Ok(si8(1)));
+/// assert_eq!(si8(10).try_rem(0_i8), Err(DivError::DivisionByZero));
+/// ```
 pub trait TryRem<Rhs = Self> {
     /// Result type produced by the remainder operation.
     type Output;
@@ -72,10 +106,28 @@ pub trait TryRem<Rhs = Self> {
     ///
     /// Returns [`DivError::DivisionByZero`] when `rhs` is zero and
     /// [`DivError::Overflow`] when the primitive operation overflows.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use satint::{TryRem, si8};
+    ///
+    /// assert_eq!(si8(12).try_rem(5_i8), Ok(si8(2)));
+    /// ```
     fn try_rem(self, rhs: Rhs) -> Result<Self::Output, DivError>;
 }
 
 /// Fallible division assignment.
+///
+/// # Examples
+///
+/// ```
+/// use satint::{TryDivAssign, si8};
+///
+/// let mut value = si8(12);
+/// value.try_div_assign(3_i8).unwrap();
+/// assert_eq!(value, si8(4));
+/// ```
 pub trait TryDivAssign<Rhs = Self> {
     /// Divides `self` by `rhs` in place.
     ///
@@ -85,10 +137,30 @@ pub trait TryDivAssign<Rhs = Self> {
     /// [`DivError::Overflow`] when the primitive operation overflows.
     ///
     /// Leaves `self` unchanged if the operation fails.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use satint::{DivError, TryDivAssign, si8};
+    ///
+    /// let mut value = si8(12);
+    /// assert_eq!(value.try_div_assign(0_i8), Err(DivError::DivisionByZero));
+    /// assert_eq!(value, si8(12));
+    /// ```
     fn try_div_assign(&mut self, rhs: Rhs) -> Result<(), DivError>;
 }
 
 /// Fallible remainder assignment.
+///
+/// # Examples
+///
+/// ```
+/// use satint::{TryRemAssign, si8};
+///
+/// let mut value = si8(12);
+/// value.try_rem_assign(5_i8).unwrap();
+/// assert_eq!(value, si8(2));
+/// ```
 pub trait TryRemAssign<Rhs = Self> {
     /// Calculates `*self %= rhs` in place.
     ///
@@ -98,6 +170,16 @@ pub trait TryRemAssign<Rhs = Self> {
     /// [`DivError::Overflow`] when the primitive operation overflows.
     ///
     /// Leaves `self` unchanged if the operation fails.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use satint::{DivError, TryRemAssign, si8};
+    ///
+    /// let mut value = si8(12);
+    /// assert_eq!(value.try_rem_assign(0_i8), Err(DivError::DivisionByZero));
+    /// assert_eq!(value, si8(12));
+    /// ```
     fn try_rem_assign(&mut self, rhs: Rhs) -> Result<(), DivError>;
 }
 

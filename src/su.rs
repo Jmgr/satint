@@ -24,22 +24,45 @@ macro_rules! generate_unsigned_functions {
     ($($name:ident; $inner:ty; $signed_name:ident; $signed_inner:ty)+) => {
         $(
             impl $name {
-                /// Computes the absolute difference between `self` and `rhs`.
+                #[doc = concat!(
+                    "Computes the absolute difference between `self` and `rhs`.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert_eq!(", stringify!($name), "::new(10).abs_diff(", stringify!($name), "::new(25)), ", stringify!($name), "::new(15));\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn abs_diff(self, rhs: Self) -> Self {
                     Self::new(self.into_inner().abs_diff(rhs.into_inner()))
                 }
 
-                /// Returns `true` if `self` is a power of two.
+                #[doc = concat!(
+                    "Returns `true` if `self` is a power of two.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert!(", stringify!($name), "::new(16).is_power_of_two());\n",
+                    "assert!(!", stringify!($name), "::new(10).is_power_of_two());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn is_power_of_two(self) -> bool {
                     self.into_inner().is_power_of_two()
                 }
 
-                /// Returns the smallest power of two greater than or equal to `self`,
-                /// saturating at `MAX` if the primitive operation would overflow.
+                #[doc = concat!(
+                    "Returns the smallest power of two greater than or equal to `self`, ",
+                    "saturating at [`", stringify!($name), "::MAX`] if the primitive operation would overflow.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert_eq!(", stringify!($name), "::new(15).next_power_of_two(), ", stringify!($name), "::new(16));\n",
+                    "assert_eq!(", stringify!($name), "::MAX.next_power_of_two(), ", stringify!($name), "::MAX);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn next_power_of_two(self) -> Self {
@@ -49,8 +72,16 @@ macro_rules! generate_unsigned_functions {
                     }
                 }
 
-                /// Returns the smallest power of two greater than or equal to `self`,
-                /// or `None` if the primitive operation would overflow.
+                #[doc = concat!(
+                    "Returns the smallest power of two greater than or equal to `self`, ",
+                    "or `None` if the primitive operation would overflow.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert_eq!(", stringify!($name), "::new(15).checked_next_power_of_two(), Some(", stringify!($name), "::new(16)));\n",
+                    "assert_eq!(", stringify!($name), "::MAX.checked_next_power_of_two(), None);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn checked_next_power_of_two(self) -> Option<Self> {
@@ -60,13 +91,30 @@ macro_rules! generate_unsigned_functions {
                     }
                 }
 
-                /// Returns the integer square root.
+                #[doc = concat!(
+                    "Returns the integer square root.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert_eq!(", stringify!($name), "::new(16).isqrt(), ", stringify!($name), "::new(4));\n",
+                    "assert_eq!(", stringify!($name), "::new(15).isqrt(), ", stringify!($name), "::new(3));\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn isqrt(self) -> Self {
                     Self::new(self.into_inner().isqrt())
                 }
 
+                #[doc = concat!(
+                    "Converts to the same-width signed wrapper, saturating values above the signed range to [`", stringify!($signed_name), "::MAX`].\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::{", stringify!($name), ", ", stringify!($signed_name), "};\n\n",
+                    "assert_eq!(", stringify!($name), "::new(42).to_signed(), ", stringify!($signed_name), "::new(42));\n",
+                    "assert_eq!(", stringify!($name), "::MAX.to_signed(), ", stringify!($signed_name), "::MAX);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn to_signed(self) -> $signed_name {

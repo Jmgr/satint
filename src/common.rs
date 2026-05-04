@@ -2,18 +2,52 @@
 ///
 /// Out-of-range positive values saturate to the destination's `MAX`, and
 /// out-of-range negative values saturate to its `MIN` (or `0` for unsigned
-/// targets). Use `From`/`Into` for lossless conversions and `TryFrom` when
-/// you need to reject out-of-range values explicitly.
+/// targets). Use `From`/`Into` for lossless conversions.
+///
+/// # Examples
+///
+/// ```
+/// use satint::{SaturatingFrom, Si8, Su8};
+///
+/// assert_eq!(Si8::saturating_from(200_i16), Si8::MAX);
+/// assert_eq!(Su8::saturating_from(-1_i16), Su8::ZERO);
+/// ```
 pub trait SaturatingFrom<T>: Sized {
     /// Converts `value` into `Self`, clamping to the destination range when
     /// the source value cannot be represented exactly.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use satint::{SaturatingFrom, Su8};
+    ///
+    /// assert_eq!(Su8::saturating_from(300_u16), Su8::MAX);
+    /// ```
     fn saturating_from(value: T) -> Self;
 }
 
 /// Reciprocal of [`SaturatingFrom`]. Provided automatically via a blanket impl.
+///
+/// # Examples
+///
+/// ```
+/// use satint::{SaturatingInto, Si8};
+///
+/// let value: Si8 = 200_i16.saturating_into();
+/// assert_eq!(value, Si8::MAX);
+/// ```
 pub trait SaturatingInto<U>: Sized {
     /// Converts `self` into `U`, clamping to the destination range when the
     /// source value cannot be represented exactly.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use satint::{SaturatingInto, Su8};
+    ///
+    /// let value: Su8 = (-1_i16).saturating_into();
+    /// assert_eq!(value, Su8::ZERO);
+    /// ```
     fn saturating_into(self) -> U;
 }
 
@@ -44,7 +78,14 @@ macro_rules! generate_saturating_wrapper {
             #[doc = concat!(
                 "A saturating wrapper around [`",
                 stringify!($inner),
-                "`]."
+                "`].\n\n",
+                "# Examples\n\n",
+                "```rust\n",
+                "use satint::{", stringify!($name), ", ", stringify!($const), "};\n\n",
+                "let value = ", stringify!($const), "(42);\n",
+                "assert_eq!(value, ", stringify!($name), "::new(42));\n",
+                "assert_eq!(value.into_inner(), 42);\n",
+                "```"
             )]
             #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Default, Hash)]
             #[repr(transparent)]
@@ -263,12 +304,30 @@ macro_rules! generate_saturating_wrapper {
                 /// The multiplicative identity value.
                 pub const ONE: Self = $name::new(1);
 
+                #[doc = concat!(
+                    "Creates a new [`", stringify!($name), "`] from an inner [`",
+                    stringify!($inner), "`] value.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let value = ", stringify!($name), "::new(42);\n",
+                    "assert_eq!(value.into_inner(), 42);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn new(value: $inner) -> Self {
                     Self(Saturating(value))
                 }
 
+                #[doc = concat!(
+                    "Returns the wrapped [`", stringify!($inner), "`] value.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert_eq!(", stringify!($name), "::new(42).into_inner(), 42);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn into_inner(self) -> $inner {
@@ -282,128 +341,272 @@ macro_rules! generate_saturating_wrapper {
                     &self.0.0
                 }
 
-                /// Returns the number of ones in the binary representation.
+                #[doc = concat!(
+                    "Returns the number of ones in the binary representation.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let value = ", stringify!($name), "::new(0b1010);\n",
+                    "assert_eq!(value.count_ones(), value.into_inner().count_ones());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn count_ones(self) -> u32 {
                     self.into_inner().count_ones()
                 }
 
-                /// Returns the number of zeros in the binary representation.
+                #[doc = concat!(
+                    "Returns the number of zeros in the binary representation.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let value = ", stringify!($name), "::new(0b1010);\n",
+                    "assert_eq!(value.count_zeros(), value.into_inner().count_zeros());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn count_zeros(self) -> u32 {
                     self.into_inner().count_zeros()
                 }
 
-                /// Returns the number of leading zeros in the binary representation.
+                #[doc = concat!(
+                    "Returns the number of leading zeros in the binary representation.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let value = ", stringify!($name), "::new(0b1010);\n",
+                    "assert_eq!(value.leading_zeros(), value.into_inner().leading_zeros());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn leading_zeros(self) -> u32 {
                     self.into_inner().leading_zeros()
                 }
 
-                /// Returns the number of leading ones in the binary representation.
+                #[doc = concat!(
+                    "Returns the number of leading ones in the binary representation.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let value = ", stringify!($name), "::MAX;\n",
+                    "assert_eq!(value.leading_ones(), value.into_inner().leading_ones());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn leading_ones(self) -> u32 {
                     self.into_inner().leading_ones()
                 }
 
-                /// Returns the number of trailing zeros in the binary representation.
+                #[doc = concat!(
+                    "Returns the number of trailing zeros in the binary representation.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let value = ", stringify!($name), "::new(0b1000);\n",
+                    "assert_eq!(value.trailing_zeros(), value.into_inner().trailing_zeros());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn trailing_zeros(self) -> u32 {
                     self.into_inner().trailing_zeros()
                 }
 
-                /// Returns the number of trailing ones in the binary representation.
+                #[doc = concat!(
+                    "Returns the number of trailing ones in the binary representation.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let value = ", stringify!($name), "::new(0b1011);\n",
+                    "assert_eq!(value.trailing_ones(), value.into_inner().trailing_ones());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn trailing_ones(self) -> u32 {
                     self.into_inner().trailing_ones()
                 }
 
-                /// Reverses the order of bits.
+                #[doc = concat!(
+                    "Reverses the order of bits.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let value = ", stringify!($name), "::new(0b0001);\n",
+                    "assert_eq!(value.reverse_bits().into_inner(), value.into_inner().reverse_bits());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn reverse_bits(self) -> Self {
                     Self::new(self.into_inner().reverse_bits())
                 }
 
-                /// Shifts bits to the left by `n`, wrapping the truncated bits to
-                /// the end of the result.
+                #[doc = concat!(
+                    "Shifts bits to the left by `n`, wrapping the truncated bits to ",
+                    "the end of the result.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let value = ", stringify!($name), "::new(0b0001);\n",
+                    "assert_eq!(value.rotate_left(1).into_inner(), value.into_inner().rotate_left(1));\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn rotate_left(self, n: u32) -> Self {
                     Self::new(self.into_inner().rotate_left(n))
                 }
 
-                /// Shifts bits to the right by `n`, wrapping the truncated bits to
-                /// the beginning of the result.
+                #[doc = concat!(
+                    "Shifts bits to the right by `n`, wrapping the truncated bits to ",
+                    "the beginning of the result.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let value = ", stringify!($name), "::new(0b0010);\n",
+                    "assert_eq!(value.rotate_right(1).into_inner(), value.into_inner().rotate_right(1));\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn rotate_right(self, n: u32) -> Self {
                     Self::new(self.into_inner().rotate_right(n))
                 }
 
-                /// Reverses the byte order.
+                #[doc = concat!(
+                    "Reverses the byte order.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let value = ", stringify!($name), "::new(42);\n",
+                    "assert_eq!(value.swap_bytes().into_inner(), value.into_inner().swap_bytes());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn swap_bytes(self) -> Self {
                     Self::new(self.into_inner().swap_bytes())
                 }
 
-                /// Converts from big-endian to the target's native endian.
+                #[doc = concat!(
+                    "Converts from big-endian to the target's native endian.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let native = ", stringify!($name), "::new(42);\n",
+                    "assert_eq!(", stringify!($name), "::from_be(native.to_be()), native);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn from_be(value: Self) -> Self {
                     Self::new(<$inner>::from_be(value.into_inner()))
                 }
 
-                /// Converts from little-endian to the target's native endian.
+                #[doc = concat!(
+                    "Converts from little-endian to the target's native endian.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let native = ", stringify!($name), "::new(42);\n",
+                    "assert_eq!(", stringify!($name), "::from_le(native.to_le()), native);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn from_le(value: Self) -> Self {
                     Self::new(<$inner>::from_le(value.into_inner()))
                 }
 
-                /// Converts `self` to big-endian from the target's native endian.
+                #[doc = concat!(
+                    "Converts `self` to big-endian from the target's native endian.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let native = ", stringify!($name), "::new(42);\n",
+                    "assert_eq!(native.to_be().into_inner(), native.into_inner().to_be());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn to_be(self) -> Self {
                     Self::new(self.into_inner().to_be())
                 }
 
-                /// Converts `self` to little-endian from the target's native endian.
+                #[doc = concat!(
+                    "Converts `self` to little-endian from the target's native endian.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let native = ", stringify!($name), "::new(42);\n",
+                    "assert_eq!(native.to_le().into_inner(), native.into_inner().to_le());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn to_le(self) -> Self {
                     Self::new(self.into_inner().to_le())
                 }
 
-                /// Returns the memory representation as a byte array in big-endian order.
+                #[doc = concat!(
+                    "Returns the memory representation as a byte array in big-endian order.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let value = ", stringify!($name), "::new(42);\n",
+                    "assert_eq!(value.to_be_bytes(), value.into_inner().to_be_bytes());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn to_be_bytes(self) -> [u8; core::mem::size_of::<$inner>()] {
                     self.into_inner().to_be_bytes()
                 }
 
-                /// Returns the memory representation as a byte array in little-endian order.
+                #[doc = concat!(
+                    "Returns the memory representation as a byte array in little-endian order.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let value = ", stringify!($name), "::new(42);\n",
+                    "assert_eq!(value.to_le_bytes(), value.into_inner().to_le_bytes());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn to_le_bytes(self) -> [u8; core::mem::size_of::<$inner>()] {
                     self.into_inner().to_le_bytes()
                 }
 
-                /// Returns the memory representation as a byte array in native-endian order.
+                #[doc = concat!(
+                    "Returns the memory representation as a byte array in native-endian order.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let value = ", stringify!($name), "::new(42);\n",
+                    "assert_eq!(value.to_ne_bytes(), value.into_inner().to_ne_bytes());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn to_ne_bytes(self) -> [u8; core::mem::size_of::<$inner>()] {
                     self.into_inner().to_ne_bytes()
                 }
 
-                /// Creates a scalar from a byte array in big-endian order.
+                #[doc = concat!(
+                    "Creates a scalar from a byte array in big-endian order.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let value = ", stringify!($name), "::new(42);\n",
+                    "assert_eq!(", stringify!($name), "::from_be_bytes(value.to_be_bytes()), value);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn from_be_bytes(
@@ -412,7 +615,15 @@ macro_rules! generate_saturating_wrapper {
                     Self::new(<$inner>::from_be_bytes(bytes))
                 }
 
-                /// Creates a scalar from a byte array in little-endian order.
+                #[doc = concat!(
+                    "Creates a scalar from a byte array in little-endian order.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let value = ", stringify!($name), "::new(42);\n",
+                    "assert_eq!(", stringify!($name), "::from_le_bytes(value.to_le_bytes()), value);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn from_le_bytes(
@@ -421,7 +632,15 @@ macro_rules! generate_saturating_wrapper {
                     Self::new(<$inner>::from_le_bytes(bytes))
                 }
 
-                /// Creates a scalar from a byte array in native-endian order.
+                #[doc = concat!(
+                    "Creates a scalar from a byte array in native-endian order.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "let value = ", stringify!($name), "::new(42);\n",
+                    "assert_eq!(", stringify!($name), "::from_ne_bytes(value.to_ne_bytes()), value);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn from_ne_bytes(
@@ -430,10 +649,17 @@ macro_rules! generate_saturating_wrapper {
                     Self::new(<$inner>::from_ne_bytes(bytes))
                 }
 
-                /// Divides two scalar values, returning `None` on division by zero
-                /// or primitive signed overflow.
-                ///
-                /// Signed overflow can occur for `MIN / -1`.
+                #[doc = concat!(
+                    "Divides two scalar values, returning `None` on division by zero ",
+                    "or primitive signed overflow.\n\n",
+                    "Signed overflow can occur for `MIN / -1`.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert_eq!(", stringify!($name), "::new(10).checked_div(", stringify!($name), "::new(2)), Some(", stringify!($name), "::new(5)));\n",
+                    "assert_eq!(", stringify!($name), "::new(10).checked_div(", stringify!($name), "::ZERO), None);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn checked_div(self, rhs: Self) -> Option<Self> {
@@ -443,8 +669,16 @@ macro_rules! generate_saturating_wrapper {
                     }
                 }
 
-                /// Calculates Euclidean division, returning `None` on division by
-                /// zero or primitive signed overflow.
+                #[doc = concat!(
+                    "Calculates Euclidean division, returning `None` on division by ",
+                    "zero or primitive signed overflow.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert_eq!(", stringify!($name), "::new(10).checked_div_euclid(", stringify!($name), "::new(3)), Some(", stringify!($name), "::new(3)));\n",
+                    "assert_eq!(", stringify!($name), "::new(10).checked_div_euclid(", stringify!($name), "::ZERO), None);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn checked_div_euclid(self, rhs: Self) -> Option<Self> {
@@ -454,10 +688,17 @@ macro_rules! generate_saturating_wrapper {
                     }
                 }
 
-                /// Calculates the remainder of two scalar values, returning `None`
-                /// on division by zero or primitive signed overflow.
-                ///
-                /// Signed overflow can occur for `MIN % -1`.
+                #[doc = concat!(
+                    "Calculates the remainder of two scalar values, returning `None` ",
+                    "on division by zero or primitive signed overflow.\n\n",
+                    "Signed overflow can occur for `MIN % -1`.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert_eq!(", stringify!($name), "::new(10).checked_rem(", stringify!($name), "::new(3)), Some(", stringify!($name), "::new(1)));\n",
+                    "assert_eq!(", stringify!($name), "::new(10).checked_rem(", stringify!($name), "::ZERO), None);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn checked_rem(self, rhs: Self) -> Option<Self> {
@@ -467,8 +708,16 @@ macro_rules! generate_saturating_wrapper {
                     }
                 }
 
-                /// Calculates the least nonnegative remainder, returning `None`
-                /// on division by zero or primitive signed overflow.
+                #[doc = concat!(
+                    "Calculates the least nonnegative remainder, returning `None` ",
+                    "on division by zero or primitive signed overflow.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert_eq!(", stringify!($name), "::new(10).checked_rem_euclid(", stringify!($name), "::new(3)), Some(", stringify!($name), "::new(1)));\n",
+                    "assert_eq!(", stringify!($name), "::new(10).checked_rem_euclid(", stringify!($name), "::ZERO), None);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn checked_rem_euclid(self, rhs: Self) -> Option<Self> {
@@ -478,52 +727,120 @@ macro_rules! generate_saturating_wrapper {
                     }
                 }
 
-                /// Raises `self` to the power of `exp`, saturating at numeric bounds.
+                #[doc = concat!(
+                    "Raises `self` to the power of `exp`, saturating at numeric bounds.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert_eq!(", stringify!($name), "::new(2).pow(3), ", stringify!($name), "::new(8));\n",
+                    "assert_eq!(", stringify!($name), "::MAX.pow(2), ", stringify!($name), "::MAX);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn pow(self, exp: u32) -> Self {
                     Self::new(self.into_inner().saturating_pow(exp))
                 }
 
-                /// Returns the base-`base` logarithm, or `None` if the logarithm is undefined.
+                #[doc = concat!(
+                    "Returns the base-`base` logarithm, or `None` if the logarithm is undefined.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert_eq!(", stringify!($name), "::new(8).checked_ilog(2), Some(3));\n",
+                    "assert_eq!(", stringify!($name), "::ZERO.checked_ilog(2), None);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn checked_ilog(self, base: $inner) -> Option<u32> {
                     self.into_inner().checked_ilog(base)
                 }
 
-                /// Returns the base-2 logarithm, or `None` if the logarithm is undefined.
+                #[doc = concat!(
+                    "Returns the base-2 logarithm, or `None` if the logarithm is undefined.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert_eq!(", stringify!($name), "::new(8).checked_ilog2(), Some(3));\n",
+                    "assert_eq!(", stringify!($name), "::ZERO.checked_ilog2(), None);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn checked_ilog2(self) -> Option<u32> {
                     self.into_inner().checked_ilog2()
                 }
 
-                /// Returns the base-10 logarithm, or `None` if the logarithm is undefined.
+                #[doc = concat!(
+                    "Returns the base-10 logarithm, or `None` if the logarithm is undefined.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert_eq!(", stringify!($name), "::new(100).checked_ilog10(), Some(2));\n",
+                    "assert_eq!(", stringify!($name), "::ZERO.checked_ilog10(), None);\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn checked_ilog10(self) -> Option<u32> {
                     self.into_inner().checked_ilog10()
                 }
 
+                #[doc = concat!(
+                    "Returns `true` if `self` is the minimum representable value.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert!(", stringify!($name), "::MIN.is_min());\n",
+                    "assert!(!", stringify!($name), "::MAX.is_min());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn is_min(self) -> bool {
                     self.into_inner() == <$inner>::MIN
                 }
 
+                #[doc = concat!(
+                    "Returns `true` if `self` is the maximum representable value.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert!(", stringify!($name), "::MAX.is_max());\n",
+                    "assert!(!", stringify!($name), "::ZERO.is_max());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn is_max(self) -> bool {
                     self.into_inner() == <$inner>::MAX
                 }
 
+                #[doc = concat!(
+                    "Returns `true` if `self` is zero.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert!(", stringify!($name), "::ZERO.is_zero());\n",
+                    "assert!(!", stringify!($name), "::ONE.is_zero());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn is_zero(self) -> bool {
                     self.into_inner() == 0
                 }
 
+                #[doc = concat!(
+                    "Returns `true` if `self` is one.\n\n",
+                    "# Examples\n\n",
+                    "```rust\n",
+                    "use satint::", stringify!($name), ";\n\n",
+                    "assert!(", stringify!($name), "::ONE.is_one());\n",
+                    "assert!(!", stringify!($name), "::ZERO.is_one());\n",
+                    "```"
+                )]
                 #[inline]
                 #[must_use]
                 pub const fn is_one(self) -> bool {
@@ -531,6 +848,15 @@ macro_rules! generate_saturating_wrapper {
                 }
             }
 
+            #[doc = concat!(
+                "Creates a [`", stringify!($name), "`] from an inner [`",
+                stringify!($inner), "`] value.\n\n",
+                "# Examples\n\n",
+                "```rust\n",
+                "use satint::{", stringify!($name), ", ", stringify!($const), "};\n\n",
+                "assert_eq!(", stringify!($const), "(42), ", stringify!($name), "::new(42));\n",
+                "```"
+            )]
             #[inline]
             #[must_use]
             pub const fn $const(value: $inner) -> $name {
