@@ -291,7 +291,7 @@ mod tests {
                         // Below dest MIN saturates at MIN (via wrapper-to-wrapper).
                         assert_eq!($name::saturating_from(Si128::MIN), $name::MIN);
                         // In-range value passes through.
-                        assert_eq!($name::saturating_from(42u128), $name::new(42));
+                        assert_eq!($name::saturating_from(42_u128), $name::new(42));
                     }
 
                     #[test]

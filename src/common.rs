@@ -1108,13 +1108,13 @@ mod tests {
 
     #[test]
     fn saturating_into_blanket() {
-        let v: Su8 = (-1i8).saturating_into();
-        assert_eq!(v, Su8::ZERO);
-        let v: Si8 = u128::MAX.saturating_into();
-        assert_eq!(v, Si8::MAX);
+        let unsigned_from_negative: Su8 = (-1_i8).saturating_into();
+        assert_eq!(unsigned_from_negative, Su8::ZERO);
+        let signed_from_large_unsigned: Si8 = u128::MAX.saturating_into();
+        assert_eq!(signed_from_large_unsigned, Si8::MAX);
         // SaturatingFrom<T> for T identity impl.
-        let v: u32 = 42u32.saturating_into();
-        assert_eq!(v, 42);
+        let identity: u32 = 42_u32.saturating_into();
+        assert_eq!(identity, 42);
     }
 
     #[test]
@@ -1143,22 +1143,20 @@ mod tests {
     #[test]
     fn from_inner_and_back() {
         // From<inner> for wrapper.
-        assert_eq!(Su8::from(42u8), Su8::new(42));
-        let s: Si8 = (-5i8).into();
+        assert_eq!(Su8::from(42_u8), Su8::new(42));
+        let s: Si8 = (-5_i8).into();
         assert_eq!(s, Si8::new(-5));
         // From<wrapper> for inner.
-        let v: u8 = Su8::new(42).into();
-        assert_eq!(v, 42);
-        let v: i8 = Si8::new(-5).into();
-        assert_eq!(v, -5);
+        let unsigned_inner: u8 = Su8::new(42).into();
+        assert_eq!(unsigned_inner, 42);
+        let signed_inner: i8 = Si8::new(-5).into();
+        assert_eq!(signed_inner, -5);
     }
 
     #[test]
     fn from_str_parsing() {
-        let s: Su8 = "42".parse().unwrap();
-        assert_eq!(s, Su8::new(42));
-        let s: Si8 = "-5".parse().unwrap();
-        assert_eq!(s, Si8::new(-5));
+        assert_eq!("42".parse::<Su8>(), Ok(Su8::new(42)));
+        assert_eq!("-5".parse::<Si8>(), Ok(Si8::new(-5)));
         assert!("not_a_number".parse::<Su8>().is_err());
         assert!("256".parse::<Su8>().is_err());
     }
@@ -1192,114 +1190,114 @@ mod tests {
 
     #[test]
     fn from_primitive_to_wrapper() {
-        let s: Su16 = 42u8.into();
-        assert_eq!(s, Su16::new(42));
-        let s: Si32 = (-5i16).into();
-        assert_eq!(s, Si32::new(-5));
-        let s: Si16 = 42u8.into();
-        assert_eq!(s, Si16::new(42));
+        let unsigned_widened: Su16 = 42_u8.into();
+        assert_eq!(unsigned_widened, Su16::new(42));
+        let signed_widened: Si32 = (-5_i16).into();
+        assert_eq!(signed_widened, Si32::new(-5));
+        let unsigned_to_signed: Si16 = 42_u8.into();
+        assert_eq!(unsigned_to_signed, Si16::new(42));
     }
 
     #[test]
     fn from_wrapper_to_primitive() {
-        let v: u32 = Su8::new(42).into();
-        assert_eq!(v, 42);
-        let v: i32 = Si8::new(-5).into();
-        assert_eq!(v, -5);
-        let v: f32 = Su8::new(42).into();
-        assert_eq!(v, 42.0);
+        let unsigned: u32 = Su8::new(42).into();
+        assert_eq!(unsigned, 42);
+        let signed: i32 = Si8::new(-5).into();
+        assert_eq!(signed, -5);
+        let float: f32 = Su8::new(42).into();
+        assert_eq!(float, 42.0);
     }
 
     #[test]
     fn saturating_signed_primitive_to_signed_wrapper() {
-        assert_eq!(Si8::saturating_from(42i32), Si8::new(42));
-        assert_eq!(Si8::saturating_from(1000i32), Si8::MAX);
-        assert_eq!(Si8::saturating_from(-1000i32), Si8::MIN);
-        assert_eq!(Si16::saturating_from(-100i32), Si16::new(-100));
+        assert_eq!(Si8::saturating_from(42_i32), Si8::new(42));
+        assert_eq!(Si8::saturating_from(1000_i32), Si8::MAX);
+        assert_eq!(Si8::saturating_from(-1000_i32), Si8::MIN);
+        assert_eq!(Si16::saturating_from(-100_i32), Si16::new(-100));
     }
 
     #[test]
     fn saturating_unsigned_primitive_to_unsigned_wrapper() {
-        assert_eq!(Su8::saturating_from(42u32), Su8::new(42));
-        assert_eq!(Su8::saturating_from(1000u32), Su8::MAX);
-        assert_eq!(Su16::saturating_from(65535u32), Su16::MAX);
+        assert_eq!(Su8::saturating_from(42_u32), Su8::new(42));
+        assert_eq!(Su8::saturating_from(1000_u32), Su8::MAX);
+        assert_eq!(Su16::saturating_from(0xFFFF_u32), Su16::MAX);
     }
 
     #[test]
     fn saturating_unsigned_primitive_to_signed_wrapper() {
-        assert_eq!(Si8::saturating_from(42u32), Si8::new(42));
-        assert_eq!(Si8::saturating_from(200u32), Si8::MAX);
-        assert_eq!(Si8::saturating_from(127u32), Si8::MAX);
+        assert_eq!(Si8::saturating_from(42_u32), Si8::new(42));
+        assert_eq!(Si8::saturating_from(200_u32), Si8::MAX);
+        assert_eq!(Si8::saturating_from(127_u32), Si8::MAX);
     }
 
     #[test]
     fn saturating_signed_primitive_to_unsigned_wrapper() {
         // Negative branch.
-        assert_eq!(Su8::saturating_from(-1i32), Su8::ZERO);
-        assert_eq!(Su8::saturating_from(-1000i32), Su8::ZERO);
+        assert_eq!(Su8::saturating_from(-1_i32), Su8::ZERO);
+        assert_eq!(Su8::saturating_from(-1000_i32), Su8::ZERO);
         // Positive branches.
-        assert_eq!(Su8::saturating_from(0i32), Su8::ZERO);
-        assert_eq!(Su8::saturating_from(42i32), Su8::new(42));
-        assert_eq!(Su8::saturating_from(1000i32), Su8::MAX);
+        assert_eq!(Su8::saturating_from(0_i32), Su8::ZERO);
+        assert_eq!(Su8::saturating_from(42_i32), Su8::new(42));
+        assert_eq!(Su8::saturating_from(1000_i32), Su8::MAX);
     }
 
     #[test]
     fn saturating_wrapper_to_primitive() {
-        let v: u8 = u8::saturating_from(Su16::new(100));
-        assert_eq!(v, 100);
-        let v: u8 = u8::saturating_from(Su16::new(1000));
-        assert_eq!(v, u8::MAX);
-        let v: i8 = i8::saturating_from(Si16::new(50));
-        assert_eq!(v, 50);
-        let v: i8 = i8::saturating_from(Si16::new(1000));
-        assert_eq!(v, i8::MAX);
-        let v: i8 = i8::saturating_from(Si16::new(-1000));
-        assert_eq!(v, i8::MIN);
+        let u8_in_range: u8 = u8::saturating_from(Su16::new(100));
+        assert_eq!(u8_in_range, 100);
+        let u8_clamped: u8 = u8::saturating_from(Su16::new(1000));
+        assert_eq!(u8_clamped, u8::MAX);
+        let i8_in_range: i8 = i8::saturating_from(Si16::new(50));
+        assert_eq!(i8_in_range, 50);
+        let i8_clamped_max: i8 = i8::saturating_from(Si16::new(1000));
+        assert_eq!(i8_clamped_max, i8::MAX);
+        let i8_clamped_min: i8 = i8::saturating_from(Si16::new(-1000));
+        assert_eq!(i8_clamped_min, i8::MIN);
     }
 
     #[test]
     fn saturating_signed_wrapper_to_unsigned_primitive() {
         // Negative branch saturates to 0.
-        let v: u8 = u8::saturating_from(Si16::new(-1));
-        assert_eq!(v, 0);
-        let v: u8 = u8::saturating_from(Si16::MIN);
-        assert_eq!(v, 0);
+        let negative: u8 = u8::saturating_from(Si16::new(-1));
+        assert_eq!(negative, 0);
+        let min: u8 = u8::saturating_from(Si16::MIN);
+        assert_eq!(min, 0);
         // In-range pass-through.
-        let v: u8 = u8::saturating_from(Si16::new(42));
-        assert_eq!(v, 42);
+        let in_range: u8 = u8::saturating_from(Si16::new(42));
+        assert_eq!(in_range, 42);
         // Above dest MAX saturates to dest MAX.
-        let v: u8 = u8::saturating_from(Si16::new(300));
-        assert_eq!(v, u8::MAX);
+        let clamped: u8 = u8::saturating_from(Si16::new(300));
+        assert_eq!(clamped, u8::MAX);
         // u128 destination: source range fits, no clamp.
-        let v: u128 = u128::saturating_from(Si128::MAX);
-        assert_eq!(v, i128::MAX as u128);
-        let v: u128 = u128::saturating_from(Si128::MIN);
-        assert_eq!(v, 0);
+        let max_as_unsigned: u128 = u128::saturating_from(Si128::MAX);
+        assert_eq!(max_as_unsigned, i128::MAX as u128);
+        let min_as_unsigned: u128 = u128::saturating_from(Si128::MIN);
+        assert_eq!(min_as_unsigned, 0);
     }
 
     #[test]
     fn saturating_unsigned_wrapper_to_signed_primitive() {
         // In-range pass-through.
-        let v: i8 = i8::saturating_from(Su16::new(42));
-        assert_eq!(v, 42);
+        let in_range: i8 = i8::saturating_from(Su16::new(42));
+        assert_eq!(in_range, 42);
         // Above signed dest MAX saturates.
-        let v: i8 = i8::saturating_from(Su16::new(200));
-        assert_eq!(v, i8::MAX);
-        let v: i8 = i8::saturating_from(Su16::MAX);
-        assert_eq!(v, i8::MAX);
+        let clamped: i8 = i8::saturating_from(Su16::new(200));
+        assert_eq!(clamped, i8::MAX);
+        let max_clamped: i8 = i8::saturating_from(Su16::MAX);
+        assert_eq!(max_clamped, i8::MAX);
         // i128 destination: u128 source can overflow signed MAX.
-        let v: i128 = i128::saturating_from(Su128::MAX);
-        assert_eq!(v, i128::MAX);
-        let v: i128 = i128::saturating_from(Su128::new(42));
-        assert_eq!(v, 42);
+        let max_as_signed: i128 = i128::saturating_from(Su128::MAX);
+        assert_eq!(max_as_signed, i128::MAX);
+        let small_as_signed: i128 = i128::saturating_from(Su128::new(42));
+        assert_eq!(small_as_signed, 42);
     }
 
     #[test]
     fn from_wrapper_to_wrapper_lossless() {
-        let s: Su16 = Su8::new(42).into();
-        assert_eq!(s, Su16::new(42));
-        let s: Si32 = Si8::new(-5).into();
-        assert_eq!(s, Si32::new(-5));
+        let unsigned: Su16 = Su8::new(42).into();
+        assert_eq!(unsigned, Su16::new(42));
+        let signed: Si32 = Si8::new(-5).into();
+        assert_eq!(signed, Si32::new(-5));
     }
 
     #[test]
@@ -1325,16 +1323,16 @@ mod tests {
     fn cross_eq_and_ord_with_inner() {
         let w = Su8::new(42);
         // wrapper <op> inner
-        assert!(w == 42u8);
-        assert!(w != 41u8);
-        assert!(w > 1u8);
-        assert!(w < 100u8);
-        assert_eq!(w.partial_cmp(&42u8), Some(core::cmp::Ordering::Equal));
+        assert!(w == 42_u8);
+        assert!(w != 41_u8);
+        assert!(w > 1_u8);
+        assert!(w < 100_u8);
+        assert_eq!(w.partial_cmp(&42_u8), Some(core::cmp::Ordering::Equal));
         // inner <op> wrapper
-        assert!(42u8 == w);
-        assert!(41u8 != w);
-        assert!(1u8 < w);
-        assert_eq!(42u8.partial_cmp(&w), Some(core::cmp::Ordering::Equal));
+        assert!(42_u8 == w);
+        assert!(41_u8 != w);
+        assert!(1_u8 < w);
+        assert_eq!(42_u8.partial_cmp(&w), Some(core::cmp::Ordering::Equal));
     }
 
     #[test]
@@ -1352,10 +1350,10 @@ mod tests {
 
         // Empty iterator yields ZERO for sum and ONE for product.
         let empty: [Su8; 0] = [];
-        let s: Su8 = empty.iter().copied().sum();
-        assert_eq!(s, Su8::ZERO);
-        let p: Su8 = empty.iter().copied().product();
-        assert_eq!(p, Su8::ONE);
+        let empty_sum: Su8 = empty.iter().copied().sum();
+        assert_eq!(empty_sum, Su8::ZERO);
+        let empty_product: Su8 = empty.iter().copied().product();
+        assert_eq!(empty_product, Su8::ONE);
     }
 
     #[test]
@@ -1367,33 +1365,33 @@ mod tests {
         assert_eq!(a ^ b, Su8::new(0b0110));
         assert_eq!(!Su8::new(0), Su8::MAX);
 
-        let mut x = a;
-        x &= b;
-        assert_eq!(x, Su8::new(0b1000));
-        let mut x = a;
-        x |= b;
-        assert_eq!(x, Su8::new(0b1110));
-        let mut x = a;
-        x ^= b;
-        assert_eq!(x, Su8::new(0b0110));
+        let mut and_assign = a;
+        and_assign &= b;
+        assert_eq!(and_assign, Su8::new(0b1000));
+        let mut or_assign = a;
+        or_assign |= b;
+        assert_eq!(or_assign, Su8::new(0b1110));
+        let mut xor_assign = a;
+        xor_assign ^= b;
+        assert_eq!(xor_assign, Su8::new(0b0110));
     }
 
     #[test]
     fn bitwise_ops_with_inner() {
         let a = Su8::new(0b1100);
-        assert_eq!(a & 0b1010u8, Su8::new(0b1000));
-        assert_eq!(a | 0b1010u8, Su8::new(0b1110));
-        assert_eq!(a ^ 0b1010u8, Su8::new(0b0110));
+        assert_eq!(a & 0b1010_u8, Su8::new(0b1000));
+        assert_eq!(a | 0b1010_u8, Su8::new(0b1110));
+        assert_eq!(a ^ 0b1010_u8, Su8::new(0b0110));
 
-        let mut x = a;
-        x &= 0b1010u8;
-        assert_eq!(x, Su8::new(0b1000));
-        let mut x = a;
-        x |= 0b1010u8;
-        assert_eq!(x, Su8::new(0b1110));
-        let mut x = a;
-        x ^= 0b1010u8;
-        assert_eq!(x, Su8::new(0b0110));
+        let mut and_assign = a;
+        and_assign &= 0b1010_u8;
+        assert_eq!(and_assign, Su8::new(0b1000));
+        let mut or_assign = a;
+        or_assign |= 0b1010_u8;
+        assert_eq!(or_assign, Su8::new(0b1110));
+        let mut xor_assign = a;
+        xor_assign ^= 0b1010_u8;
+        assert_eq!(xor_assign, Su8::new(0b0110));
     }
 
     #[test]

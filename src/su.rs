@@ -221,8 +221,8 @@ mod tests {
                     #[test]
                     fn test_saturating_conversions() {
                         // Signed to Unsigned saturation (negatives to 0)
-                        assert_eq!($name::saturating_from(-1i8), $name::ZERO);
-                        assert_eq!($name::saturating_from(-128i8), $name::ZERO);
+                        assert_eq!($name::saturating_from(-1_i8), $name::ZERO);
+                        assert_eq!($name::saturating_from(-128_i8), $name::ZERO);
                     }
                 }
             )+

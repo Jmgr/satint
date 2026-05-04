@@ -12,8 +12,9 @@
 //! a failure identifies the failing pair without manual bookkeeping.
 
 #![allow(
+    clippy::cognitive_complexity,
     clippy::unwrap_used,
-    reason = "Clippy's allow-unwrap-in-tests config does not apply to integration test crates"
+    reason = "Macro fan-out tests intentionally expand into broad operator matrices"
 )]
 
 use satint::{

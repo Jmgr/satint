@@ -878,19 +878,19 @@ mod tests {
         assert_eq!(Si128::MIN.try_rem(Si128::new(-1)), Err(DivError::Overflow),);
 
         // Assign variants: success leaves new value; failure leaves it unchanged.
-        let mut x = Si8::new(10);
-        x.try_div_assign(Si8::new(3)).unwrap();
-        assert_eq!(x, Si8::new(3));
-        let err = x.try_div_assign(Si8::ZERO);
-        assert_eq!(err, Err(DivError::DivisionByZero));
-        assert_eq!(x, Si8::new(3));
+        let mut div_acc = Si8::new(10);
+        assert_eq!(div_acc.try_div_assign(Si8::new(3)), Ok(()));
+        assert_eq!(div_acc, Si8::new(3));
+        let div_err = div_acc.try_div_assign(Si8::ZERO);
+        assert_eq!(div_err, Err(DivError::DivisionByZero));
+        assert_eq!(div_acc, Si8::new(3));
 
-        let mut x = Si8::new(10);
-        x.try_rem_assign(Si8::new(3)).unwrap();
-        assert_eq!(x, Si8::new(1));
-        let err = x.try_rem_assign(Si8::ZERO);
-        assert_eq!(err, Err(DivError::DivisionByZero));
-        assert_eq!(x, Si8::new(1));
+        let mut rem_acc = Si8::new(10);
+        assert_eq!(rem_acc.try_rem_assign(Si8::new(3)), Ok(()));
+        assert_eq!(rem_acc, Si8::new(1));
+        let rem_err = rem_acc.try_rem_assign(Si8::ZERO);
+        assert_eq!(rem_err, Err(DivError::DivisionByZero));
+        assert_eq!(rem_acc, Si8::new(1));
     }
 
     #[cfg(feature = "panicking-ops")]
@@ -899,66 +899,66 @@ mod tests {
         use core::ops::{Div, DivAssign, Rem, RemAssign};
         assert_eq!(Si8::new(10).div(Si8::new(3)), Si8::new(3));
         assert_eq!(Si8::new(10).rem(Si8::new(3)), Si8::new(1));
-        let mut x = Si8::new(10);
-        x.div_assign(Si8::new(3));
-        assert_eq!(x, Si8::new(3));
-        let mut x = Si8::new(10);
-        x.rem_assign(Si8::new(3));
-        assert_eq!(x, Si8::new(1));
+        let mut div_acc = Si8::new(10);
+        div_acc.div_assign(Si8::new(3));
+        assert_eq!(div_acc, Si8::new(3));
+        let mut rem_acc = Si8::new(10);
+        rem_acc.rem_assign(Si8::new(3));
+        assert_eq!(rem_acc, Si8::new(1));
     }
 
     #[test]
     fn primitive_to_wrapper_arith() {
         // Signed wrapper with signed primitive.
-        assert_eq!(Si8::new(1) + 2i32, Si8::new(3));
-        assert_eq!(Si8::MAX + 1i32, Si8::MAX);
-        assert_eq!(Si8::new(5) - 3i32, Si8::new(2));
-        assert_eq!(Si8::new(3) * 4i32, Si8::new(12));
+        assert_eq!(Si8::new(1) + 2_i32, Si8::new(3));
+        assert_eq!(Si8::MAX + 1_i32, Si8::MAX);
+        assert_eq!(Si8::new(5) - 3_i32, Si8::new(2));
+        assert_eq!(Si8::new(3) * 4_i32, Si8::new(12));
 
-        let mut x = Si8::new(5);
-        x += 3i32;
-        assert_eq!(x, Si8::new(8));
-        x -= 1i32;
-        assert_eq!(x, Si8::new(7));
-        x *= 2i32;
-        assert_eq!(x, Si8::new(14));
+        let mut signed_acc = Si8::new(5);
+        signed_acc += 3_i32;
+        assert_eq!(signed_acc, Si8::new(8));
+        signed_acc -= 1_i32;
+        assert_eq!(signed_acc, Si8::new(7));
+        signed_acc *= 2_i32;
+        assert_eq!(signed_acc, Si8::new(14));
 
         // Unsigned wrapper with unsigned primitive.
-        assert_eq!(Su8::new(1) + 2u32, Su8::new(3));
-        assert_eq!(Su8::new(5) - 3u32, Su8::new(2));
-        assert_eq!(Su8::new(3) * 4u32, Su8::new(12));
+        assert_eq!(Su8::new(1) + 2_u32, Su8::new(3));
+        assert_eq!(Su8::new(5) - 3_u32, Su8::new(2));
+        assert_eq!(Su8::new(3) * 4_u32, Su8::new(12));
         let mut y = Su8::new(5);
-        y += 3u32;
-        y -= 1u32;
-        y *= 2u32;
+        y += 3_u32;
+        y -= 1_u32;
+        y *= 2_u32;
         assert_eq!(y, Su8::new(14));
 
         // try_div and try_rem with primitive RHS.
-        assert_eq!(Si8::new(10).try_div(3i32), Ok(Si8::new(3)));
-        assert_eq!(Si8::new(10).try_div(0i32), Err(DivError::DivisionByZero));
-        assert_eq!(Si8::new(10).try_rem(3i32), Ok(Si8::new(1)));
-        assert_eq!(Si8::new(10).try_rem(0i32), Err(DivError::DivisionByZero));
+        assert_eq!(Si8::new(10).try_div(3_i32), Ok(Si8::new(3)));
+        assert_eq!(Si8::new(10).try_div(0_i32), Err(DivError::DivisionByZero));
+        assert_eq!(Si8::new(10).try_rem(3_i32), Ok(Si8::new(1)));
+        assert_eq!(Si8::new(10).try_rem(0_i32), Err(DivError::DivisionByZero));
         // Assign variants.
-        let mut x = Si8::new(10);
-        x.try_div_assign(3i32).unwrap();
-        assert_eq!(x, Si8::new(3));
-        let mut x = Si8::new(10);
-        x.try_rem_assign(3i32).unwrap();
-        assert_eq!(x, Si8::new(1));
+        let mut div_acc = Si8::new(10);
+        assert_eq!(div_acc.try_div_assign(3_i32), Ok(()));
+        assert_eq!(div_acc, Si8::new(3));
+        let mut rem_acc = Si8::new(10);
+        assert_eq!(rem_acc.try_rem_assign(3_i32), Ok(()));
+        assert_eq!(rem_acc, Si8::new(1));
     }
 
     #[cfg(feature = "panicking-ops")]
     #[test]
     fn panicking_div_rem_primitive() {
         use core::ops::{Div, DivAssign, Rem, RemAssign};
-        assert_eq!(Si8::new(10).div(3i32), Si8::new(3));
-        assert_eq!(Si8::new(10).rem(3i32), Si8::new(1));
-        let mut x = Si8::new(10);
-        x.div_assign(3i32);
-        assert_eq!(x, Si8::new(3));
-        let mut x = Si8::new(10);
-        x.rem_assign(3i32);
-        assert_eq!(x, Si8::new(1));
+        assert_eq!(Si8::new(10).div(3_i32), Si8::new(3));
+        assert_eq!(Si8::new(10).rem(3_i32), Si8::new(1));
+        let mut div_acc = Si8::new(10);
+        div_acc.div_assign(3_i32);
+        assert_eq!(div_acc, Si8::new(3));
+        let mut rem_acc = Si8::new(10);
+        rem_acc.rem_assign(3_i32);
+        assert_eq!(rem_acc, Si8::new(1));
     }
 
     #[test]
@@ -990,23 +990,23 @@ mod tests {
     #[test]
     fn cross_sign_primitive_arith() {
         // Signed wrapper +/- unsigned primitive.
-        assert_eq!(Si8::new(1) + 2u32, Si8::new(3));
-        assert_eq!(Si8::MAX + 100u32, Si8::MAX);
-        assert_eq!(Si8::new(5) - 3u32, Si8::new(2));
-        assert_eq!(Si8::MIN - 100u32, Si8::MIN);
+        assert_eq!(Si8::new(1) + 2_u32, Si8::new(3));
+        assert_eq!(Si8::MAX + 100_u32, Si8::MAX);
+        assert_eq!(Si8::new(5) - 3_u32, Si8::new(2));
+        assert_eq!(Si8::MIN - 100_u32, Si8::MIN);
         let mut x = Si8::new(5);
-        x += 3u32;
+        x += 3_u32;
         assert_eq!(x, Si8::new(8));
-        x -= 2u32;
+        x -= 2_u32;
         assert_eq!(x, Si8::new(6));
 
         // Unsigned wrapper +/- signed primitive.
-        assert_eq!(Su8::new(5) + 3i32, Su8::new(8));
-        assert_eq!(Su8::new(5) - 3i32, Su8::new(2));
+        assert_eq!(Su8::new(5) + 3_i32, Su8::new(8));
+        assert_eq!(Su8::new(5) - 3_i32, Su8::new(2));
         let mut y = Su8::new(5);
-        y += 3i32;
+        y += 3_i32;
         assert_eq!(y, Su8::new(8));
-        y -= 2i32;
+        y -= 2_i32;
         assert_eq!(y, Su8::new(6));
     }
 
@@ -1025,9 +1025,9 @@ mod tests {
         assert_eq!(Si8::new(64) << 2, Si8::MAX);
         assert_eq!(Si8::new(-64) << 2, Si8::MIN);
         // Shl assign.
-        let mut x = Si8::new(1);
-        x <<= 2;
-        assert_eq!(x, Si8::new(4));
+        let mut left_shifted = Si8::new(1);
+        left_shifted <<= 2;
+        assert_eq!(left_shifted, Si8::new(4));
 
         // Shr: rhs < BITS (normal arithmetic shift).
         assert_eq!(Si8::new(8) >> 2, Si8::new(2));
@@ -1035,9 +1035,9 @@ mod tests {
         // Shr: rhs >= BITS sign-extends to 0 or -1.
         assert_eq!(Si8::new(8) >> 8, Si8::ZERO);
         assert_eq!(Si8::new(-1) >> 8, Si8::new(-1));
-        let mut x = Si8::new(8);
-        x >>= 2;
-        assert_eq!(x, Si8::new(2));
+        let mut right_shifted = Si8::new(8);
+        right_shifted >>= 2;
+        assert_eq!(right_shifted, Si8::new(2));
 
         // Neg: normal and saturating.
         assert_eq!(-Si8::new(5), Si8::new(-5));
@@ -1053,17 +1053,17 @@ mod tests {
         assert_eq!(Su8::new(1) << 8, Su8::MAX);
         // Shl: leading_zeros < rhs saturates.
         assert_eq!(Su8::new(0b1100_0000) << 2, Su8::MAX);
-        let mut x = Su8::new(1);
-        x <<= 3;
-        assert_eq!(x, Su8::new(8));
+        let mut left_shifted = Su8::new(1);
+        left_shifted <<= 3;
+        assert_eq!(left_shifted, Su8::new(8));
 
         // Shr: normal.
         assert_eq!(Su8::new(8) >> 2, Su8::new(2));
         // Shr: rhs >= BITS yields 0.
         assert_eq!(Su8::new(255) >> 8, Su8::ZERO);
-        let mut x = Su8::new(8);
-        x >>= 2;
-        assert_eq!(x, Su8::new(2));
+        let mut right_shifted = Su8::new(8);
+        right_shifted >>= 2;
+        assert_eq!(right_shifted, Su8::new(2));
     }
 
     #[test]

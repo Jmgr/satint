@@ -255,9 +255,9 @@ mod tests {
                     #[test]
                     fn $name() {
                         type DstInner = <$dest as Inner>::Inner;
-                        assert_eq!($dest::saturating_from(0isize), $dest::ZERO);
-                        assert_eq!($dest::saturating_from(42isize), $dest::new(42));
-                        assert_eq!($dest::saturating_from(-42isize), $dest::new(-42));
+                        assert_eq!($dest::saturating_from(0_isize), $dest::ZERO);
+                        assert_eq!($dest::saturating_from(42_isize), $dest::new(42));
+                        assert_eq!($dest::saturating_from(-42_isize), $dest::new(-42));
                         let expected_max = if (isize::MAX as i128) > (DstInner::MAX as i128) {
                             $dest::MAX
                         } else {
@@ -290,8 +290,8 @@ mod tests {
                     #[test]
                     fn $name() {
                         type DstInner = <$dest as Inner>::Inner;
-                        assert_eq!($dest::saturating_from(0usize), $dest::ZERO);
-                        assert_eq!($dest::saturating_from(42usize), $dest::new(42));
+                        assert_eq!($dest::saturating_from(0_usize), $dest::ZERO);
+                        assert_eq!($dest::saturating_from(42_usize), $dest::new(42));
                         let expected_max = if (usize::MAX as u128) > (DstInner::MAX as u128) {
                             $dest::MAX
                         } else {
@@ -318,8 +318,8 @@ mod tests {
                     #[test]
                     fn $name() {
                         type DstInner = <$dest as Inner>::Inner;
-                        assert_eq!($dest::saturating_from(0usize), $dest::ZERO);
-                        assert_eq!($dest::saturating_from(42usize), $dest::new(42));
+                        assert_eq!($dest::saturating_from(0_usize), $dest::ZERO);
+                        assert_eq!($dest::saturating_from(42_usize), $dest::new(42));
                         let expected_max = if (usize::MAX as u128) > (DstInner::MAX as u128) {
                             $dest::MAX
                         } else {
@@ -346,9 +346,9 @@ mod tests {
                     #[test]
                     fn $name() {
                         type DstInner = <$dest as Inner>::Inner;
-                        assert_eq!($dest::saturating_from(0isize), $dest::ZERO);
-                        assert_eq!($dest::saturating_from(42isize), $dest::new(42));
-                        assert_eq!($dest::saturating_from(-1isize), $dest::ZERO);
+                        assert_eq!($dest::saturating_from(0_isize), $dest::ZERO);
+                        assert_eq!($dest::saturating_from(42_isize), $dest::new(42));
+                        assert_eq!($dest::saturating_from(-1_isize), $dest::ZERO);
                         assert_eq!($dest::saturating_from(isize::MIN), $dest::ZERO);
                         let expected_max = if (isize::MAX as u128) > (DstInner::MAX as u128) {
                             $dest::MAX
@@ -430,14 +430,14 @@ mod tests {
 
     #[test]
     fn round_trip_isize_through_si128() {
-        for v in [0isize, 1, -1, 12345, -12345, isize::MAX, isize::MIN] {
+        for v in [0_isize, 1, -1, 12345, -12345, isize::MAX, isize::MIN] {
             assert_eq!(isize::saturating_from(Si128::saturating_from(v)), v);
         }
     }
 
     #[test]
     fn round_trip_usize_through_su128() {
-        for v in [0usize, 1, 12345, usize::MAX] {
+        for v in [0_usize, 1, 12345, usize::MAX] {
             assert_eq!(usize::saturating_from(Su128::saturating_from(v)), v);
         }
     }
