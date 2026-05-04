@@ -1,3 +1,21 @@
+## [0.3.0] - 2026-05-04
+
+### 🚀 Features
+
+- Refactor, simplify, add missing cases
+- CI: run nightly fmt
+
+### 🐛 Bug Fixes
+
+- Clippy
+
+### 📚 Documentation
+
+- Update after API refactor
+
+### ⚙️ Miscellaneous Tasks
+
+- Update version
 ## [0.2.3] - 2026-05-03
 
 ### 🚀 Features
@@ -11,6 +29,7 @@
 ### ⚙️ Miscellaneous Tasks
 
 - Update version
+- Update changelog
 ## [0.2.2] - 2026-05-03
 
 ### 🚀 Features
