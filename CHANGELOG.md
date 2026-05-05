@@ -1,3 +1,18 @@
+## [0.3.1] - 2026-05-05
+
+### 🚀 Features
+
+- Implement SaturatingFrom for all integers
+- Implement SaturatingFrom for floats to integers
+- Add Susize and Sisize
+
+### 📚 Documentation
+
+- Update readme and rustdoc
+
+### ⚙️ Miscellaneous Tasks
+
+- Update version
 ## [0.3.0] - 2026-05-04
 
 ### 🚀 Features
@@ -16,6 +31,7 @@
 ### ⚙️ Miscellaneous Tasks
 
 - Update version
+- Update changelog
 ## [0.2.3] - 2026-05-03
 
 ### 🚀 Features
