@@ -84,6 +84,32 @@ generate_saturating_from_unsigned_to_signed!(i64; u8, u16, u32, u64, u128, usize
 generate_saturating_from_unsigned_to_signed!(i128; u8, u16, u32, u64, u128, usize);
 generate_saturating_from_unsigned_to_signed!(isize; u8, u16, u32, u64, u128, usize);
 
+macro_rules! generate_saturating_from_float_to_integer {
+    ($destination:ty; $($source:ty),+ $(,)?) => {
+        $(
+            impl SaturatingFrom<$source> for $destination {
+                #[inline]
+                fn saturating_from(value: $source) -> Self {
+                    value as Self
+                }
+            }
+        )+
+    };
+}
+
+generate_saturating_from_float_to_integer!(i8; f32, f64);
+generate_saturating_from_float_to_integer!(i16; f32, f64);
+generate_saturating_from_float_to_integer!(i32; f32, f64);
+generate_saturating_from_float_to_integer!(i64; f32, f64);
+generate_saturating_from_float_to_integer!(i128; f32, f64);
+generate_saturating_from_float_to_integer!(isize; f32, f64);
+generate_saturating_from_float_to_integer!(u8; f32, f64);
+generate_saturating_from_float_to_integer!(u16; f32, f64);
+generate_saturating_from_float_to_integer!(u32; f32, f64);
+generate_saturating_from_float_to_integer!(u64; f32, f64);
+generate_saturating_from_float_to_integer!(u128; f32, f64);
+generate_saturating_from_float_to_integer!(usize; f32, f64);
+
 #[cfg(test)]
 mod tests {
     use crate::common::{SaturatingFrom, SaturatingInto};
@@ -132,6 +158,38 @@ mod tests {
         assert_eq!(i32::saturating_from(u128::MAX), i32::MAX);
         assert_eq!(isize::saturating_from(u128::MAX), isize::MAX);
         assert_eq!(i128::saturating_from(u128::MAX), i128::MAX);
+    }
+
+    #[test]
+    fn float_to_integer_primitives_clamp_to_destination_range() {
+        // In-range values truncate toward zero.
+        assert_eq!(i32::saturating_from(42.7_f32), 42);
+        assert_eq!(i32::saturating_from(-42.7_f64), -42);
+        assert_eq!(u32::saturating_from(42.7_f32), 42);
+
+        // Out-of-range positive saturates to MAX.
+        assert_eq!(i8::saturating_from(1000.0_f32), i8::MAX);
+        assert_eq!(u8::saturating_from(1000.0_f64), u8::MAX);
+        assert_eq!(i32::saturating_from(f64::MAX), i32::MAX);
+        assert_eq!(u128::saturating_from(f64::MAX), u128::MAX);
+
+        // Out-of-range negative saturates to MIN (or 0 for unsigned).
+        assert_eq!(i8::saturating_from(-1000.0_f32), i8::MIN);
+        assert_eq!(u8::saturating_from(-1.0_f64), 0);
+        assert_eq!(i32::saturating_from(f64::MIN), i32::MIN);
+        assert_eq!(u128::saturating_from(-f32::MAX), 0);
+
+        // Infinities saturate.
+        assert_eq!(i32::saturating_from(f32::INFINITY), i32::MAX);
+        assert_eq!(i32::saturating_from(f32::NEG_INFINITY), i32::MIN);
+        assert_eq!(u32::saturating_from(f64::INFINITY), u32::MAX);
+        assert_eq!(u32::saturating_from(f64::NEG_INFINITY), 0);
+
+        // NaN converts to zero.
+        assert_eq!(i32::saturating_from(f32::NAN), 0);
+        assert_eq!(u32::saturating_from(f64::NAN), 0);
+        assert_eq!(isize::saturating_from(f64::NAN), 0);
+        assert_eq!(usize::saturating_from(f32::NAN), 0);
     }
 
     #[test]
