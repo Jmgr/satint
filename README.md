@@ -11,10 +11,10 @@
 `satint` provides `no_std`, no-alloc integer wrapper types whose arithmetic
 operators saturate at the destination type's numeric bounds.
 
-The signed wrappers are `Si8`, `Si16`, `Si32`, `Si64`, and `Si128`. The
-unsigned wrappers are `Su8`, `Su16`, `Su32`, `Su64`, and `Su128`. Each type has
-a matching `const` constructor function: `si8`, `si16`, `su8`, `su16`, and so
-on.
+The signed wrappers are `Si8`, `Si16`, `Si32`, `Si64`, `Si128`, and `Sisize`.
+The unsigned wrappers are `Su8`, `Su16`, `Su32`, `Su64`, `Su128`, and `Susize`.
+Each type has a matching `const` constructor function: `si8`, `si16`, `sisize`,
+`su8`, `su16`, `susize`, and so on.
 
 ```rust
 use satint::{Su8, su8};
@@ -34,14 +34,16 @@ associated `new` constructor, the short free constructor, or `From` for the
 matching primitive. Use `into_inner` to recover the primitive value.
 
 ```rust
-use satint::{Si16, Su32, si16, su32};
+use satint::{Si16, Su32, sisize, si16, su32, susize};
 
 let signed = Si16::new(-40);
 let also_signed = si16(-40);
 let unsigned = Su32::from(40_u32);
+let pointer_sized = sisize(-10) + susize(5);
 
 assert_eq!(signed, also_signed);
 assert_eq!(unsigned, su32(40));
+assert_eq!(pointer_sized, sisize(-5));
 assert_eq!(signed.into_inner(), -40);
 ```
 
@@ -165,7 +167,8 @@ assert_eq!(primitive, 200);
 
 Use `SaturatingFrom` or `SaturatingInto` when the source may not fit. These
 traits clamp to the destination range. Signed-to-unsigned conversions clamp
-negative values to zero.
+negative values to zero. The traits are implemented between all primitive
+integer types, between wrappers, and between wrappers and primitive integers.
 
 ```rust
 use satint::{SaturatingFrom, SaturatingInto, Si8, Su8, si16, su16};
@@ -174,11 +177,15 @@ let unsigned: Su8 = su16(999).saturating_into();
 let signed: Si8 = si16(-300).saturating_into();
 let from_primitive = Su8::saturating_from(-12_i32);
 let primitive: u8 = u8::saturating_from(si16(300));
+let narrowed: i8 = i16::MAX.saturating_into();
+let non_negative: usize = isize::MIN.saturating_into();
 
 assert_eq!(unsigned, Su8::MAX);
 assert_eq!(signed, Si8::MIN);
 assert_eq!(from_primitive, Su8::ZERO);
 assert_eq!(primitive, u8::MAX);
+assert_eq!(narrowed, i8::MAX);
+assert_eq!(non_negative, 0);
 ```
 
 Same-width signedness conversions also have inherent saturating helpers.
@@ -192,12 +199,16 @@ assert_eq!(su32(42).to_signed(), si32(42));
 assert_eq!(si32(42).to_unsigned(), su32(42));
 ```
 
-Floating-point sources can be converted into wrappers with `SaturatingFrom` and
-`SaturatingInto`. These conversions use Rust's `as` cast behavior: finite values
-truncate toward zero, out-of-range values clamp, and `NaN` becomes zero.
+Floating-point sources can be converted into primitive integers or wrappers with
+`SaturatingFrom` and `SaturatingInto`. These conversions use Rust's `as` cast
+behavior: finite values truncate toward zero, out-of-range values clamp, and
+`NaN` becomes zero.
 
 ```rust
-use satint::{SaturatingFrom, Si32, Su8};
+use satint::{SaturatingFrom, SaturatingInto, Si32, Su8};
+
+let primitive: i8 = 200.0_f32.saturating_into();
+let unsigned_primitive = u8::saturating_from(-1.0_f64);
 
 assert_eq!(Si32::saturating_from(3.7_f64).into_inner(), 3);
 assert_eq!(Si32::saturating_from(-3.7_f64).into_inner(), -3);
@@ -205,6 +216,8 @@ assert_eq!(Si32::saturating_from(f64::NAN), Si32::ZERO);
 assert_eq!(Si32::saturating_from(f64::INFINITY), Si32::MAX);
 assert_eq!(Su8::saturating_from(-1.0_f32), Su8::ZERO);
 assert_eq!(Su8::saturating_from(300.0_f32), Su8::MAX);
+assert_eq!(primitive, i8::MAX);
+assert_eq!(unsigned_primitive, 0);
 ```
 
 Wrapper-to-float `From` impls are provided only where every source value is

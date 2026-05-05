@@ -3,17 +3,18 @@
 //! Saturating scalar wrappers for signed and unsigned primitive integers.
 //!
 //! The crate exposes signed wrappers ([`Si8`], [`Si16`], [`Si32`], [`Si64`],
-//! [`Si128`]) and unsigned wrappers ([`Su8`], [`Su16`], [`Su32`], [`Su64`],
-//! [`Su128`]). Arithmetic operators saturate at the left-hand side type's
-//! numeric bounds.
+//! [`Si128`], [`Sisize`]) and unsigned wrappers ([`Su8`], [`Su16`], [`Su32`],
+//! [`Su64`], [`Su128`], [`Susize`]). Arithmetic operators saturate at the
+//! left-hand side type's numeric bounds.
 //!
 //! ```
-//! use satint::{Si8, Su8, si8, su8};
+//! use satint::{Si8, Su8, sisize, si8, su8, susize};
 //!
 //! assert_eq!(su8(250) + su8(10), Su8::MAX);
 //! assert_eq!(su8(0) - 1, Su8::ZERO);
 //! assert_eq!(si8(100) * 2, Si8::MAX);
 //! assert_eq!(-Si8::MIN, Si8::MAX);
+//! assert_eq!(sisize(-10) + susize(5), sisize(-5));
 //! ```
 //!
 //! Checked division and remainder are available as inherent `checked_*`
@@ -30,7 +31,9 @@
 //! ```
 //!
 //! Use [`From`] / [`Into`] for lossless conversions and [`SaturatingFrom`] /
-//! [`SaturatingInto`] when the source may be out of range.
+//! [`SaturatingInto`] when the source may be out of range. Saturating
+//! conversions are implemented between all primitive integer types, between
+//! wrappers, and between wrappers and primitive integers.
 //!
 //! ```
 //! use satint::{SaturatingFrom, SaturatingInto, Si8, Si32, Su8, si16, su8};
@@ -38,10 +41,16 @@
 //! let widened: Si32 = Si8::new(-5).into();
 //! let clamped: Su8 = si16(-1).saturating_into();
 //! let from_float = Si8::saturating_from(200.0_f32);
+//! let primitive_from_wrapper = u8::saturating_from(si16(300));
+//! let primitive_from_primitive: i8 = i16::MAX.saturating_into();
+//! let primitive_from_float = u8::saturating_from(-1.0_f64);
 //!
 //! assert_eq!(widened, Si32::new(-5));
 //! assert_eq!(clamped, Su8::ZERO);
 //! assert_eq!(from_float, Si8::MAX);
+//! assert_eq!(primitive_from_wrapper, u8::MAX);
+//! assert_eq!(primitive_from_primitive, i8::MAX);
+//! assert_eq!(primitive_from_float, 0);
 //! assert_eq!(su8(42).to_signed(), Si8::new(42));
 //! ```
 
