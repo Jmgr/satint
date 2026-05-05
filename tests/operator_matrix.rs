@@ -18,8 +18,8 @@
 )]
 
 use satint::{
-    DivError, SaturatingInto, Si8, Si16, Si32, Si64, Si128, Su8, Su16, Su32, Su64, Su128, TryDiv,
-    TryDivAssign, TryRem, TryRemAssign,
+    DivError, SaturatingInto, Si8, Si16, Si32, Si64, Si128, Sisize, Su8, Su16, Su32, Su64, Su128,
+    Susize, TryDiv, TryDivAssign, TryRem, TryRemAssign,
 };
 
 // ============================================================================
@@ -33,26 +33,37 @@ macro_rules! for_each_signed_wrapper_pair {
         $body!(Si8, Si32);
         $body!(Si8, Si64);
         $body!(Si8, Si128);
+        $body!(Si8, Sisize);
         $body!(Si16, Si8);
         $body!(Si16, Si16);
         $body!(Si16, Si32);
         $body!(Si16, Si64);
         $body!(Si16, Si128);
+        $body!(Si16, Sisize);
         $body!(Si32, Si8);
         $body!(Si32, Si16);
         $body!(Si32, Si32);
         $body!(Si32, Si64);
         $body!(Si32, Si128);
+        $body!(Si32, Sisize);
         $body!(Si64, Si8);
         $body!(Si64, Si16);
         $body!(Si64, Si32);
         $body!(Si64, Si64);
         $body!(Si64, Si128);
+        $body!(Si64, Sisize);
         $body!(Si128, Si8);
         $body!(Si128, Si16);
         $body!(Si128, Si32);
         $body!(Si128, Si64);
         $body!(Si128, Si128);
+        $body!(Si128, Sisize);
+        $body!(Sisize, Si8);
+        $body!(Sisize, Si16);
+        $body!(Sisize, Si32);
+        $body!(Sisize, Si64);
+        $body!(Sisize, Si128);
+        $body!(Sisize, Sisize);
     };
 }
 
@@ -63,26 +74,37 @@ macro_rules! for_each_unsigned_wrapper_pair {
         $body!(Su8, Su32);
         $body!(Su8, Su64);
         $body!(Su8, Su128);
+        $body!(Su8, Susize);
         $body!(Su16, Su8);
         $body!(Su16, Su16);
         $body!(Su16, Su32);
         $body!(Su16, Su64);
         $body!(Su16, Su128);
+        $body!(Su16, Susize);
         $body!(Su32, Su8);
         $body!(Su32, Su16);
         $body!(Su32, Su32);
         $body!(Su32, Su64);
         $body!(Su32, Su128);
+        $body!(Su32, Susize);
         $body!(Su64, Su8);
         $body!(Su64, Su16);
         $body!(Su64, Su32);
         $body!(Su64, Su64);
         $body!(Su64, Su128);
+        $body!(Su64, Susize);
         $body!(Su128, Su8);
         $body!(Su128, Su16);
         $body!(Su128, Su32);
         $body!(Su128, Su64);
         $body!(Su128, Su128);
+        $body!(Su128, Susize);
+        $body!(Susize, Su8);
+        $body!(Susize, Su16);
+        $body!(Susize, Su32);
+        $body!(Susize, Su64);
+        $body!(Susize, Su128);
+        $body!(Susize, Susize);
     };
 }
 
@@ -93,26 +115,37 @@ macro_rules! for_each_signed_lhs_unsigned_rhs_wrapper {
         $body!(Si8, Su32);
         $body!(Si8, Su64);
         $body!(Si8, Su128);
+        $body!(Si8, Susize);
         $body!(Si16, Su8);
         $body!(Si16, Su16);
         $body!(Si16, Su32);
         $body!(Si16, Su64);
         $body!(Si16, Su128);
+        $body!(Si16, Susize);
         $body!(Si32, Su8);
         $body!(Si32, Su16);
         $body!(Si32, Su32);
         $body!(Si32, Su64);
         $body!(Si32, Su128);
+        $body!(Si32, Susize);
         $body!(Si64, Su8);
         $body!(Si64, Su16);
         $body!(Si64, Su32);
         $body!(Si64, Su64);
         $body!(Si64, Su128);
+        $body!(Si64, Susize);
         $body!(Si128, Su8);
         $body!(Si128, Su16);
         $body!(Si128, Su32);
         $body!(Si128, Su64);
         $body!(Si128, Su128);
+        $body!(Si128, Susize);
+        $body!(Sisize, Su8);
+        $body!(Sisize, Su16);
+        $body!(Sisize, Su32);
+        $body!(Sisize, Su64);
+        $body!(Sisize, Su128);
+        $body!(Sisize, Susize);
     };
 }
 
@@ -123,26 +156,37 @@ macro_rules! for_each_unsigned_lhs_signed_rhs_wrapper {
         $body!(Su8, Si32);
         $body!(Su8, Si64);
         $body!(Su8, Si128);
+        $body!(Su8, Sisize);
         $body!(Su16, Si8);
         $body!(Su16, Si16);
         $body!(Su16, Si32);
         $body!(Su16, Si64);
         $body!(Su16, Si128);
+        $body!(Su16, Sisize);
         $body!(Su32, Si8);
         $body!(Su32, Si16);
         $body!(Su32, Si32);
         $body!(Su32, Si64);
         $body!(Su32, Si128);
+        $body!(Su32, Sisize);
         $body!(Su64, Si8);
         $body!(Su64, Si16);
         $body!(Su64, Si32);
         $body!(Su64, Si64);
         $body!(Su64, Si128);
+        $body!(Su64, Sisize);
         $body!(Su128, Si8);
         $body!(Su128, Si16);
         $body!(Su128, Si32);
         $body!(Su128, Si64);
         $body!(Su128, Si128);
+        $body!(Su128, Sisize);
+        $body!(Susize, Si8);
+        $body!(Susize, Si16);
+        $body!(Susize, Si32);
+        $body!(Susize, Si64);
+        $body!(Susize, Si128);
+        $body!(Susize, Sisize);
     };
 }
 
@@ -178,6 +222,12 @@ macro_rules! for_each_signed_wrapper_x_signed_primitive {
         $body!(Si128, i64);
         $body!(Si128, i128);
         $body!(Si128, isize);
+        $body!(Sisize, i8);
+        $body!(Sisize, i16);
+        $body!(Sisize, i32);
+        $body!(Sisize, i64);
+        $body!(Sisize, i128);
+        $body!(Sisize, isize);
     };
 }
 
@@ -213,6 +263,12 @@ macro_rules! for_each_unsigned_wrapper_x_unsigned_primitive {
         $body!(Su128, u64);
         $body!(Su128, u128);
         $body!(Su128, usize);
+        $body!(Susize, u8);
+        $body!(Susize, u16);
+        $body!(Susize, u32);
+        $body!(Susize, u64);
+        $body!(Susize, u128);
+        $body!(Susize, usize);
     };
 }
 
@@ -248,6 +304,12 @@ macro_rules! for_each_signed_wrapper_x_unsigned_primitive {
         $body!(Si128, u64);
         $body!(Si128, u128);
         $body!(Si128, usize);
+        $body!(Sisize, u8);
+        $body!(Sisize, u16);
+        $body!(Sisize, u32);
+        $body!(Sisize, u64);
+        $body!(Sisize, u128);
+        $body!(Sisize, usize);
     };
 }
 
@@ -283,6 +345,12 @@ macro_rules! for_each_unsigned_wrapper_x_signed_primitive {
         $body!(Su128, i64);
         $body!(Su128, i128);
         $body!(Su128, isize);
+        $body!(Susize, i8);
+        $body!(Susize, i16);
+        $body!(Susize, i32);
+        $body!(Susize, i64);
+        $body!(Susize, i128);
+        $body!(Susize, isize);
     };
 }
 
@@ -293,6 +361,7 @@ macro_rules! for_each_signed_wrapper {
         $body!(Si32);
         $body!(Si64);
         $body!(Si128);
+        $body!(Sisize);
     };
 }
 
@@ -303,6 +372,7 @@ macro_rules! for_each_unsigned_wrapper {
         $body!(Su32);
         $body!(Su64);
         $body!(Su128);
+        $body!(Susize);
     };
 }
 

@@ -6,8 +6,8 @@ use core::ops::{Div, DivAssign, Rem, RemAssign};
 
 use crate::{
     common::{Inner, SaturatingFrom},
-    si::{Si8, Si16, Si32, Si64, Si128},
-    su::{Su8, Su16, Su32, Su64, Su128},
+    si::{Si8, Si16, Si32, Si64, Si128, Sisize},
+    su::{Su8, Su16, Su32, Su64, Su128, Susize},
 };
 
 /// Error returned by fallible division and remainder operations.
@@ -722,15 +722,15 @@ macro_rules! generate_signed_ops {
                 }
             }
 
-            generate_wrapper_to_wrapper_ops!($name; i128; Si8, Si16, Si32, Si64, Si128);
+            generate_wrapper_to_wrapper_ops!($name; i128; Si8, Si16, Si32, Si64, Si128, Sisize);
             generate_primitive_to_wrapper_ops!($name; i128; i8, i16, i32, i64, i128, isize);
-            generate_wrapper_to_wrapper_signed_to_unsigned!($name; Su8, Su16, Su32, Su64, Su128);
+            generate_wrapper_to_wrapper_signed_to_unsigned!($name; Su8, Su16, Su32, Su64, Su128, Susize);
             generate_primitive_to_wrapper_signed_to_unsigned!($name; u8, u16, u32, u64, u128, usize);
         )+
     };
 }
 
-generate_signed_ops!(Si8, Si16, Si32, Si64, Si128);
+generate_signed_ops!(Si8, Si16, Si32, Si64, Si128, Sisize);
 
 macro_rules! generate_unsigned_ops {
     ($($name:ident),+ $(,)?) => {
@@ -783,15 +783,15 @@ macro_rules! generate_unsigned_ops {
                 }
             }
 
-            generate_wrapper_to_wrapper_ops!($name; u128; Su8, Su16, Su32, Su64, Su128);
+            generate_wrapper_to_wrapper_ops!($name; u128; Su8, Su16, Su32, Su64, Su128, Susize);
             generate_primitive_to_wrapper_ops!($name; u128; u8, u16, u32, u64, u128, usize);
-            generate_wrapper_to_wrapper_unsigned_to_signed!($name; Si8, Si16, Si32, Si64, Si128);
+            generate_wrapper_to_wrapper_unsigned_to_signed!($name; Si8, Si16, Si32, Si64, Si128, Sisize);
             generate_primitive_to_wrapper_unsigned_to_signed!($name; i8, i16, i32, i64, i128, isize);
         )+
     };
 }
 
-generate_unsigned_ops!(Su8, Su16, Su32, Su64, Su128);
+generate_unsigned_ops!(Su8, Su16, Su32, Su64, Su128, Susize);
 
 #[cfg(test)]
 mod tests {

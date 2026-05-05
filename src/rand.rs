@@ -6,7 +6,7 @@ use rand::{
 use crate::{
     common::Inner,
     si::{Si8, Si16, Si32, Si64, Si128},
-    su::{Su8, Su16, Su32, Su64, Su128},
+    su::{Su8, Su16, Su32, Su64, Su128, Susize},
 };
 
 macro_rules! generate_rand {
@@ -96,17 +96,21 @@ macro_rules! generate_rand {
     };
 }
 
+// `Sisize` is intentionally omitted: rand 0.10 does not implement
+// `SampleUniform` for `isize` (only `usize`), so the macro cannot produce a
+// sampler from the inner type.
 generate_rand!(
-    Si8; UniformSi8
-    Si16; UniformSi16
-    Si32; UniformSi32
-    Si64; UniformSi64
-    Si128; UniformSi128
-    Su8; UniformSu8
-    Su16; UniformSu16
-    Su32; UniformSu32
-    Su64; UniformSu64
-    Su128; UniformSu128
+    Si8;    UniformSi8
+    Si16;   UniformSi16
+    Si32;   UniformSi32
+    Si64;   UniformSi64
+    Si128;  UniformSi128
+    Su8;    UniformSu8
+    Su16;   UniformSu16
+    Su32;   UniformSu32
+    Su64;   UniformSu64
+    Su128;  UniformSu128
+    Susize; UniformSusize
 );
 
 #[cfg(test)]
@@ -127,11 +131,11 @@ mod tests {
 
     use super::{
         UniformSi8, UniformSi16, UniformSi32, UniformSi64, UniformSi128, UniformSu8, UniformSu16,
-        UniformSu32, UniformSu64, UniformSu128,
+        UniformSu32, UniformSu64, UniformSu128, UniformSusize,
     };
     use crate::{
         si::{Si8, Si16, Si32, Si64, Si128},
-        su::{Su8, Su16, Su32, Su64, Su128},
+        su::{Su8, Su16, Su32, Su64, Su128, Susize},
     };
 
     fn assert_sample_uniform<T: SampleUniform>() {}
@@ -255,15 +259,16 @@ mod tests {
     }
 
     test_rand_suite!(
-        si8_tests;   Si8;   UniformSi8;   -5; -4; 5
-        si16_tests;  Si16;  UniformSi16;  -5; -4; 5
-        si32_tests;  Si32;  UniformSi32;  -5; -4; 5
-        si64_tests;  Si64;  UniformSi64;  -5; -4; 5
-        si128_tests; Si128; UniformSi128; -5; -4; 5
-        su8_tests;   Su8;   UniformSu8;    5;  6; 15
-        su16_tests;  Su16;  UniformSu16;   5;  6; 15
-        su32_tests;  Su32;  UniformSu32;   5;  6; 15
-        su64_tests;  Su64;  UniformSu64;   5;  6; 15
-        su128_tests; Su128; UniformSu128;  5;  6; 15
+        si8_tests;    Si8;    UniformSi8;    -5; -4; 5
+        si16_tests;   Si16;   UniformSi16;   -5; -4; 5
+        si32_tests;   Si32;   UniformSi32;   -5; -4; 5
+        si64_tests;   Si64;   UniformSi64;   -5; -4; 5
+        si128_tests;  Si128;  UniformSi128;  -5; -4; 5
+        su8_tests;    Su8;    UniformSu8;     5;  6; 15
+        su16_tests;   Su16;   UniformSu16;    5;  6; 15
+        su32_tests;   Su32;   UniformSu32;    5;  6; 15
+        su64_tests;   Su64;   UniformSu64;    5;  6; 15
+        su128_tests;  Su128;  UniformSu128;   5;  6; 15
+        susize_tests; Susize; UniformSusize;  5;  6; 15
     );
 }

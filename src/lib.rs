@@ -58,5 +58,5 @@ mod su;
 
 pub use common::{SaturatingFrom, SaturatingInto};
 pub use ops::{DivError, TryDiv, TryDivAssign, TryRem, TryRemAssign};
-pub use si::{Si8, Si16, Si32, Si64, Si128, si8, si16, si32, si64, si128};
-pub use su::{Su8, Su16, Su32, Su64, Su128, su8, su16, su32, su64, su128};
+pub use si::{Si8, Si16, Si32, Si64, Si128, Sisize, si8, si16, si32, si64, si128, sisize};
+pub use su::{Su8, Su16, Su32, Su64, Su128, Susize, su8, su16, su32, su64, su128, susize};

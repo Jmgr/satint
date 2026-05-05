@@ -1,7 +1,7 @@
 use crate::{
     common::{Inner, SaturatingFrom},
-    si::{Si8, Si16, Si32, Si64, Si128},
-    su::{Su8, Su16, Su32, Su64, Su128},
+    si::{Si8, Si16, Si32, Si64, Si128, Sisize},
+    su::{Su8, Su16, Su32, Su64, Su128, Susize},
 };
 
 macro_rules! generate_wrapper_from_wrapper {
@@ -19,7 +19,7 @@ macro_rules! generate_wrapper_from_wrapper {
     };
 }
 
-generate_wrapper_from_wrapper!(Su8; Si16, Si32, Si64, Si128);
+generate_wrapper_from_wrapper!(Su8; Si16, Si32, Si64, Si128, Sisize);
 generate_wrapper_from_wrapper!(Su16; Si32, Si64, Si128);
 generate_wrapper_from_wrapper!(Su32; Si64, Si128);
 generate_wrapper_from_wrapper!(Su64; Si128);
@@ -45,11 +45,12 @@ macro_rules! generate_saturating_unsigned_wrapper_from_signed_wrapper {
     };
 }
 
-generate_saturating_unsigned_wrapper_from_signed_wrapper!(Si8; Su8, Su16, Su32, Su64, Su128);
-generate_saturating_unsigned_wrapper_from_signed_wrapper!(Si16; Su8, Su16, Su32, Su64, Su128);
-generate_saturating_unsigned_wrapper_from_signed_wrapper!(Si32; Su8, Su16, Su32, Su64, Su128);
-generate_saturating_unsigned_wrapper_from_signed_wrapper!(Si64; Su8, Su16, Su32, Su64, Su128);
-generate_saturating_unsigned_wrapper_from_signed_wrapper!(Si128; Su8, Su16, Su32, Su64, Su128);
+generate_saturating_unsigned_wrapper_from_signed_wrapper!(Si8; Su8, Su16, Su32, Su64, Su128, Susize);
+generate_saturating_unsigned_wrapper_from_signed_wrapper!(Si16; Su8, Su16, Su32, Su64, Su128, Susize);
+generate_saturating_unsigned_wrapper_from_signed_wrapper!(Si32; Su8, Su16, Su32, Su64, Su128, Susize);
+generate_saturating_unsigned_wrapper_from_signed_wrapper!(Si64; Su8, Su16, Su32, Su64, Su128, Susize);
+generate_saturating_unsigned_wrapper_from_signed_wrapper!(Si128; Su8, Su16, Su32, Su64, Su128, Susize);
+generate_saturating_unsigned_wrapper_from_signed_wrapper!(Sisize; Su8, Su16, Su32, Su64, Su128, Susize);
 
 macro_rules! generate_saturating_signed_wrapper_from_unsigned_wrapper {
     ($source:ident; $($destination:ident),+ $(,)?) => {
@@ -70,18 +71,19 @@ macro_rules! generate_saturating_signed_wrapper_from_unsigned_wrapper {
     };
 }
 
-generate_saturating_signed_wrapper_from_unsigned_wrapper!(Su8; Si8, Si16, Si32, Si64, Si128);
-generate_saturating_signed_wrapper_from_unsigned_wrapper!(Su16; Si8, Si16, Si32, Si64, Si128);
-generate_saturating_signed_wrapper_from_unsigned_wrapper!(Su32; Si8, Si16, Si32, Si64, Si128);
-generate_saturating_signed_wrapper_from_unsigned_wrapper!(Su64; Si8, Si16, Si32, Si64, Si128);
-generate_saturating_signed_wrapper_from_unsigned_wrapper!(Su128; Si8, Si16, Si32, Si64, Si128);
+generate_saturating_signed_wrapper_from_unsigned_wrapper!(Su8; Si8, Si16, Si32, Si64, Si128, Sisize);
+generate_saturating_signed_wrapper_from_unsigned_wrapper!(Su16; Si8, Si16, Si32, Si64, Si128, Sisize);
+generate_saturating_signed_wrapper_from_unsigned_wrapper!(Su32; Si8, Si16, Si32, Si64, Si128, Sisize);
+generate_saturating_signed_wrapper_from_unsigned_wrapper!(Su64; Si8, Si16, Si32, Si64, Si128, Sisize);
+generate_saturating_signed_wrapper_from_unsigned_wrapper!(Su128; Si8, Si16, Si32, Si64, Si128, Sisize);
+generate_saturating_signed_wrapper_from_unsigned_wrapper!(Susize; Si8, Si16, Si32, Si64, Si128, Sisize);
 
 #[cfg(test)]
 mod tests {
     use crate::{
         common::{Inner, SaturatingFrom},
-        si::{Si8, Si16, Si32, Si64, Si128},
-        su::{Su8, Su16, Su32, Su64, Su128},
+        si::{Si8, Si16, Si32, Si64, Si128, Sisize},
+        su::{Su8, Su16, Su32, Su64, Su128, Susize},
     };
 
     // Lossless From<Su*> for wider Si*.
@@ -102,16 +104,17 @@ mod tests {
     }
 
     test_su_to_si_lossless!(
-        su8_into_si16;   Su8;  Si16
-        su8_into_si32;   Su8;  Si32
-        su8_into_si64;   Su8;  Si64
-        su8_into_si128;  Su8;  Si128
-        su16_into_si32;  Su16; Si32
-        su16_into_si64;  Su16; Si64
-        su16_into_si128; Su16; Si128
-        su32_into_si64;  Su32; Si64
-        su32_into_si128; Su32; Si128
-        su64_into_si128; Su64; Si128
+        su8_into_si16;    Su8;  Si16
+        su8_into_si32;    Su8;  Si32
+        su8_into_si64;    Su8;  Si64
+        su8_into_si128;   Su8;  Si128
+        su8_into_sisize;  Su8;  Sisize
+        su16_into_si32;   Su16; Si32
+        su16_into_si64;   Su16; Si64
+        su16_into_si128;  Su16; Si128
+        su32_into_si64;   Su32; Si64
+        su32_into_si128;  Su32; Si128
+        su64_into_si128;  Su64; Si128
     );
 
     // SaturatingFrom<Si*> for Su*: negatives -> 0, > dest MAX -> dest MAX, else pass-through.
@@ -148,31 +151,42 @@ mod tests {
     }
 
     test_si_to_su_saturating!(
-        si8_into_su8;     Si8;   Su8
-        si8_into_su16;    Si8;   Su16
-        si8_into_su32;    Si8;   Su32
-        si8_into_su64;    Si8;   Su64
-        si8_into_su128;   Si8;   Su128
-        si16_into_su8;    Si16;  Su8
-        si16_into_su16;   Si16;  Su16
-        si16_into_su32;   Si16;  Su32
-        si16_into_su64;   Si16;  Su64
-        si16_into_su128;  Si16;  Su128
-        si32_into_su8;    Si32;  Su8
-        si32_into_su16;   Si32;  Su16
-        si32_into_su32;   Si32;  Su32
-        si32_into_su64;   Si32;  Su64
-        si32_into_su128;  Si32;  Su128
-        si64_into_su8;    Si64;  Su8
-        si64_into_su16;   Si64;  Su16
-        si64_into_su32;   Si64;  Su32
-        si64_into_su64;   Si64;  Su64
-        si64_into_su128;  Si64;  Su128
-        si128_into_su8;   Si128; Su8
-        si128_into_su16;  Si128; Su16
-        si128_into_su32;  Si128; Su32
-        si128_into_su64;  Si128; Su64
-        si128_into_su128; Si128; Su128
+        si8_into_su8;       Si8;    Su8
+        si8_into_su16;      Si8;    Su16
+        si8_into_su32;      Si8;    Su32
+        si8_into_su64;      Si8;    Su64
+        si8_into_su128;     Si8;    Su128
+        si8_into_susize;    Si8;    Susize
+        si16_into_su8;      Si16;   Su8
+        si16_into_su16;     Si16;   Su16
+        si16_into_su32;     Si16;   Su32
+        si16_into_su64;     Si16;   Su64
+        si16_into_su128;    Si16;   Su128
+        si16_into_susize;   Si16;   Susize
+        si32_into_su8;      Si32;   Su8
+        si32_into_su16;     Si32;   Su16
+        si32_into_su32;     Si32;   Su32
+        si32_into_su64;     Si32;   Su64
+        si32_into_su128;    Si32;   Su128
+        si32_into_susize;   Si32;   Susize
+        si64_into_su8;      Si64;   Su8
+        si64_into_su16;     Si64;   Su16
+        si64_into_su32;     Si64;   Su32
+        si64_into_su64;     Si64;   Su64
+        si64_into_su128;    Si64;   Su128
+        si64_into_susize;   Si64;   Susize
+        si128_into_su8;     Si128;  Su8
+        si128_into_su16;    Si128;  Su16
+        si128_into_su32;    Si128;  Su32
+        si128_into_su64;    Si128;  Su64
+        si128_into_su128;   Si128;  Su128
+        si128_into_susize;  Si128;  Susize
+        sisize_into_su8;    Sisize; Su8
+        sisize_into_su16;   Sisize; Su16
+        sisize_into_su32;   Sisize; Su32
+        sisize_into_su64;   Sisize; Su64
+        sisize_into_su128;  Sisize; Su128
+        sisize_into_susize; Sisize; Susize
     );
 
     // SaturatingFrom<Su*> for Si*: > dest signed MAX -> dest MAX, else pass-through.
@@ -205,21 +219,28 @@ mod tests {
     }
 
     test_su_to_si_saturating!(
-        su8_into_si8;     Su8;   Si8
-        su16_into_si8;    Su16;  Si8
-        su16_into_si16;   Su16;  Si16
-        su32_into_si8;    Su32;  Si8
-        su32_into_si16;   Su32;  Si16
-        su32_into_si32;   Su32;  Si32
-        su64_into_si8;    Su64;  Si8
-        su64_into_si16;   Su64;  Si16
-        su64_into_si32;   Su64;  Si32
-        su64_into_si64;   Su64;  Si64
-        su128_into_si8;   Su128; Si8
-        su128_into_si16;  Su128; Si16
-        su128_into_si32;  Su128; Si32
-        su128_into_si64;  Su128; Si64
-        su128_into_si128; Su128; Si128
+        su8_into_si8;       Su8;    Si8
+        su16_into_si8;      Su16;   Si8
+        su16_into_si16;     Su16;   Si16
+        su32_into_si8;      Su32;   Si8
+        su32_into_si16;     Su32;   Si16
+        su32_into_si32;     Su32;   Si32
+        su64_into_si8;      Su64;   Si8
+        su64_into_si16;     Su64;   Si16
+        su64_into_si32;     Su64;   Si32
+        su64_into_si64;     Su64;   Si64
+        su128_into_si8;     Su128;  Si8
+        su128_into_si16;    Su128;  Si16
+        su128_into_si32;    Su128;  Si32
+        su128_into_si64;    Su128;  Si64
+        su128_into_si128;   Su128;  Si128
+        su128_into_sisize;  Su128;  Sisize
+        susize_into_si8;    Susize; Si8
+        susize_into_si16;   Susize; Si16
+        susize_into_si32;   Susize; Si32
+        susize_into_si64;   Susize; Si64
+        susize_into_si128;  Susize; Si128
+        susize_into_sisize; Susize; Sisize
     );
 
     // usize/isize are guaranteed by the Rust reference to be at least 16 bits
@@ -246,6 +267,31 @@ mod tests {
         su8_into_usize;  Su8;  usize
         su16_into_usize; Su16; usize
         su8_into_isize;  Su8;  isize
+    );
+
+    // Lossless From<primitive> for Sisize/Susize (only u8/u16/i8/i16 fit on a 16-bit target).
+    macro_rules! test_lossless_into_size_wrapper {
+        ($($name:ident; $primitive:ty; $dest:ident)+) => {
+            $(
+                #[test]
+                fn $name() {
+                    assert_eq!($dest::from(0 as $primitive), $dest::ZERO);
+                    assert_eq!($dest::from(<$primitive>::MAX), $dest::from(<$primitive>::MAX));
+                    assert_eq!(
+                        $dest::from(<$primitive>::MAX).into_inner() as i128,
+                        <$primitive>::MAX as i128,
+                    );
+                }
+            )+
+        };
+    }
+
+    test_lossless_into_size_wrapper!(
+        u8_into_susize;  u8;  Susize
+        u16_into_susize; u16; Susize
+        i8_into_sisize;  i8;  Sisize
+        i16_into_sisize; i16; Sisize
+        u8_into_sisize;  u8;  Sisize
     );
 
     // SaturatingFrom<isize> for Si* (same-sign signed).
@@ -276,11 +322,12 @@ mod tests {
         }
 
     test_saturating_isize_to_si!(
-        isize_into_si8;   Si8
-        isize_into_si16;  Si16
-        isize_into_si32;  Si32
-        isize_into_si64;  Si64
-        isize_into_si128; Si128
+        isize_into_si8;     Si8
+        isize_into_si16;    Si16
+        isize_into_si32;    Si32
+        isize_into_si64;    Si64
+        isize_into_si128;   Si128
+        isize_into_sisize;  Sisize
     );
 
     // SaturatingFrom<usize> for Si* (cross-sign; source non-negative).
@@ -304,11 +351,12 @@ mod tests {
         }
 
     test_saturating_usize_to_si!(
-        usize_into_si8;   Si8
-        usize_into_si16;  Si16
-        usize_into_si32;  Si32
-        usize_into_si64;  Si64
-        usize_into_si128; Si128
+        usize_into_si8;     Si8
+        usize_into_si16;    Si16
+        usize_into_si32;    Si32
+        usize_into_si64;    Si64
+        usize_into_si128;   Si128
+        usize_into_sisize;  Sisize
     );
 
     // SaturatingFrom<usize> for Su* (same-sign unsigned).
@@ -332,11 +380,12 @@ mod tests {
         }
 
     test_saturating_usize_to_su!(
-        usize_into_su8;   Su8
-        usize_into_su16;  Su16
-        usize_into_su32;  Su32
-        usize_into_su64;  Su64
-        usize_into_su128; Su128
+        usize_into_su8;     Su8
+        usize_into_su16;    Su16
+        usize_into_su32;    Su32
+        usize_into_su64;    Su64
+        usize_into_su128;   Su128
+        usize_into_susize;  Susize
     );
 
     // SaturatingFrom<isize> for Su* (cross-sign; negatives -> 0).
@@ -362,11 +411,12 @@ mod tests {
         }
 
     test_saturating_isize_to_su!(
-        isize_into_su8;   Su8
-        isize_into_su16;  Su16
-        isize_into_su32;  Su32
-        isize_into_su64;  Su64
-        isize_into_su128; Su128
+        isize_into_su8;     Su8
+        isize_into_su16;    Su16
+        isize_into_su32;    Su32
+        isize_into_su64;    Su64
+        isize_into_su128;   Su128
+        isize_into_susize;  Susize
     );
 
     // SaturatingFrom<Si*> for isize.
@@ -397,9 +447,10 @@ mod tests {
         }
 
     test_saturating_si_to_isize!(
-        si32_into_isize;  Si32
-        si64_into_isize;  Si64
-        si128_into_isize; Si128
+        si32_into_isize;   Si32
+        si64_into_isize;   Si64
+        si128_into_isize;  Si128
+        sisize_into_isize; Sisize
     );
 
     // SaturatingFrom<Su*> for usize.
@@ -423,9 +474,10 @@ mod tests {
         }
 
     test_saturating_su_to_usize!(
-        su32_into_usize;  Su32
-        su64_into_usize;  Su64
-        su128_into_usize; Su128
+        su32_into_usize;   Su32
+        su64_into_usize;   Su64
+        su128_into_usize;  Su128
+        susize_into_usize; Susize
     );
 
     #[test]

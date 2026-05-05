@@ -11,7 +11,7 @@ use crate::{
         generate_saturating_from_wrapper_to_primitive, generate_saturating_from_wrapper_to_wrapper,
         generate_saturating_wrapper,
     },
-    su::{Su8, Su16, Su32, Su64, Su128},
+    su::{Su8, Su16, Su32, Su64, Su128, Susize},
 };
 
 generate_saturating_wrapper!(Si8; si8; i8);
@@ -19,6 +19,7 @@ generate_saturating_wrapper!(Si16; si16; i16);
 generate_saturating_wrapper!(Si32; si32; i32);
 generate_saturating_wrapper!(Si64; si64; i64);
 generate_saturating_wrapper!(Si128; si128; i128);
+generate_saturating_wrapper!(Sisize; sisize; isize);
 
 macro_rules! generate_signed_functions {
     ($($name:ident; $unsigned_name:ident)+) => {
@@ -183,11 +184,13 @@ generate_signed_functions!(Si16; Su16);
 generate_signed_functions!(Si32; Su32);
 generate_signed_functions!(Si64; Su64);
 generate_signed_functions!(Si128; Su128);
+generate_signed_functions!(Sisize; Susize);
 
 generate_from_primitive_to_wrapper!(Si16; i8, u8);
 generate_from_primitive_to_wrapper!(Si32; i8, i16, u8, u16);
 generate_from_primitive_to_wrapper!(Si64; i8, i16, i32, u8, u16, u32);
 generate_from_primitive_to_wrapper!(Si128; i8, i16, i32, i64, u8, u16, u32, u64);
+generate_from_primitive_to_wrapper!(Sisize; i8, i16, u8);
 
 generate_from_wrapper_to_primitive!(Si8; i16, i32, i64, i128, isize, f32, f64);
 generate_from_wrapper_to_primitive!(Si16; i32, i64, i128, isize, f32, f64);
@@ -198,19 +201,21 @@ generate_from_wrapper_to_wrapper!(Si16; Si8);
 generate_from_wrapper_to_wrapper!(Si32; Si8, Si16);
 generate_from_wrapper_to_wrapper!(Si64; Si8, Si16, Si32);
 generate_from_wrapper_to_wrapper!(Si128; Si8, Si16, Si32, Si64);
+generate_from_wrapper_to_wrapper!(Sisize; Si8, Si16);
 
-generate_saturating_from_wrapper_to_wrapper!(Si8; i128; Si16, Si32, Si64, Si128);
-generate_saturating_from_wrapper_to_wrapper!(Si16; i128; Si8,  Si32, Si64, Si128);
-generate_saturating_from_wrapper_to_wrapper!(Si32; i128; Si8,  Si16, Si64, Si128);
-generate_saturating_from_wrapper_to_wrapper!(Si64; i128; Si8,  Si16, Si32, Si128);
-generate_saturating_from_wrapper_to_wrapper!(Si128; i128; Si8,  Si16, Si32, Si64);
+generate_saturating_from_wrapper_to_wrapper!(Si8; i128; Si16, Si32, Si64, Si128, Sisize);
+generate_saturating_from_wrapper_to_wrapper!(Si16; i128; Si8,  Si32, Si64, Si128, Sisize);
+generate_saturating_from_wrapper_to_wrapper!(Si32; i128; Si8,  Si16, Si64, Si128, Sisize);
+generate_saturating_from_wrapper_to_wrapper!(Si64; i128; Si8,  Si16, Si32, Si128, Sisize);
+generate_saturating_from_wrapper_to_wrapper!(Si128; i128; Si8,  Si16, Si32, Si64, Sisize);
+generate_saturating_from_wrapper_to_wrapper!(Sisize; i128; Si8,  Si16, Si32, Si64, Si128);
 
 #[cfg(test)]
 mod tests {
     use crate::{
         common::{Inner, SaturatingFrom},
-        si::{Si8, Si16, Si32, Si64, Si128},
-        su::{Su8, Su16, Su32, Su64, Su128},
+        si::{Si8, Si16, Si32, Si64, Si128, Sisize},
+        su::{Su8, Su16, Su32, Su64, Su128, Susize},
     };
 
     macro_rules! test_signed_suite {
@@ -308,10 +313,11 @@ mod tests {
     }
 
     test_signed_suite!(
-        si8_tests;   Si8;   Su8
-        si16_tests;  Si16;  Su16
-        si32_tests;  Si32;  Su32
-        si64_tests;  Si64;  Su64
-        si128_tests; Si128; Su128
+        si8_tests;    Si8;    Su8
+        si16_tests;   Si16;   Su16
+        si32_tests;   Si32;   Su32
+        si64_tests;   Si64;   Su64
+        si128_tests;  Si128;  Su128
+        sisize_tests; Sisize; Susize
     );
 }

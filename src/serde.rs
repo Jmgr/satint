@@ -2,8 +2,8 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::{
     common::Inner,
-    si::{Si8, Si16, Si32, Si64, Si128},
-    su::{Su8, Su16, Su32, Su64, Su128},
+    si::{Si8, Si16, Si32, Si64, Si128, Sisize},
+    su::{Su8, Su16, Su32, Su64, Su128, Susize},
 };
 
 macro_rules! generate_serde {
@@ -33,7 +33,9 @@ macro_rules! generate_serde {
     };
 }
 
-generate_serde!(Si8, Si16, Si32, Si64, Si128, Su8, Su16, Su32, Su64, Su128);
+generate_serde!(
+    Si8, Si16, Si32, Si64, Si128, Sisize, Su8, Su16, Su32, Su64, Su128, Susize
+);
 
 #[cfg(test)]
 mod tests {
@@ -41,8 +43,8 @@ mod tests {
     use serde_test::{Token, assert_tokens};
 
     use crate::{
-        si::{Si8, Si16, Si32, Si64, Si128},
-        su::{Su8, Su16, Su32, Su64, Su128},
+        si::{Si8, Si16, Si32, Si64, Si128, Sisize},
+        su::{Su8, Su16, Su32, Su64, Su128, Susize},
     };
 
     fn assert_serialize<T: Serialize>() {}
@@ -65,7 +67,9 @@ mod tests {
         };
     }
 
-    test_serde_traits!(Si8, Si16, Si32, Si64, Si128, Su8, Su16, Su32, Su64, Su128);
+    test_serde_traits!(
+        Si8, Si16, Si32, Si64, Si128, Sisize, Su8, Su16, Su32, Su64, Su128, Susize
+    );
 
     macro_rules! test_serde_tokens {
         ($($mod_name:ident; $name:ident; $value:expr; $token:expr)+) => {
@@ -83,13 +87,15 @@ mod tests {
     }
 
     test_serde_tokens!(
-        si8_tests;  Si8;  -12;          Token::I8(-12)
-        si16_tests; Si16; -1234;        Token::I16(-1234)
-        si32_tests; Si32; -123_456;     Token::I32(-123_456)
-        si64_tests; Si64; -123_456_789; Token::I64(-123_456_789)
-        su8_tests;  Su8;  200;          Token::U8(200)
-        su16_tests; Su16; 60_000;       Token::U16(60_000)
-        su32_tests; Su32; 3_000_000_000; Token::U32(3_000_000_000)
-        su64_tests; Su64; u64::MAX;     Token::U64(u64::MAX)
+        si8_tests;     Si8;    -12;            Token::I8(-12)
+        si16_tests;    Si16;   -1234;          Token::I16(-1234)
+        si32_tests;    Si32;   -123_456;       Token::I32(-123_456)
+        si64_tests;    Si64;   -123_456_789;   Token::I64(-123_456_789)
+        sisize_tests;  Sisize; -123_456;       Token::I64(-123_456)
+        su8_tests;     Su8;    200;            Token::U8(200)
+        su16_tests;    Su16;   60_000;         Token::U16(60_000)
+        su32_tests;    Su32;   3_000_000_000;  Token::U32(3_000_000_000)
+        su64_tests;    Su64;   u64::MAX;       Token::U64(u64::MAX)
+        susize_tests;  Susize; 123_456;        Token::U64(123_456)
     );
 }

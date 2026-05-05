@@ -13,8 +13,8 @@ use rand::{
     rngs::SmallRng,
 };
 use satint::{
-    Si8, Si16, Si32, Si64, Si128, Su8, Su16, Su32, Su64, Su128, si8, si16, si32, si64, si128, su8,
-    su16, su32, su64, su128,
+    Si8, Si16, Si32, Si64, Si128, Su8, Su16, Su32, Su64, Su128, Susize, si8, si16, si32, si64,
+    si128, su8, su16, su32, su64, su128,
 };
 
 fn assert_sample_uniform<T: SampleUniform>() {}
@@ -37,6 +37,7 @@ fn concrete_aliases_implement_sample_uniform() {
     assert_sample_uniform::<Su32>();
     assert_sample_uniform::<Su64>();
     assert_sample_uniform::<Su128>();
+    assert_sample_uniform::<Susize>();
 }
 
 #[test]
