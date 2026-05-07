@@ -17,6 +17,8 @@
     reason = "Macro fan-out tests intentionally expand into broad operator matrices"
 )]
 
+use core::num::NonZero;
+
 use satint::{
     DivError, SaturatingInto, Si8, Si16, Si32, Si64, Si128, Sisize, Su8, Su16, Su32, Su64, Su128,
     Susize, TryDiv, TryDivAssign, TryRem, TryRemAssign,
@@ -1280,6 +1282,48 @@ fn try_rem_signed_overflow_only_at_widest_width() {
     // Smaller widths widen to i128 without overflow, so Si8::MIN % -1 succeeds.
     assert_eq!(Si8::MIN.try_rem(Si8::new(-1)), Ok(Si8::ZERO));
     assert_eq!(Si64::MIN.try_rem(Si64::new(-1)), Ok(Si64::ZERO));
+}
+
+// ============================================================================
+// Infallible Div/Rem with NonZero primitive RHS.
+// ============================================================================
+
+#[test]
+fn div_signed_wrapper_to_nonzero_signed_primitive() {
+    macro_rules! check {
+        ($Lhs:ident, $rhs:ty) => {{
+            let label = concat!(stringify!($Lhs), " / NonZero<", stringify!($rhs), ">");
+            let rhs = NonZero::<$rhs>::new(3 as $rhs).unwrap();
+
+            assert_eq!(<$Lhs>::new(10) / rhs, <$Lhs>::new(3), "{label} div");
+
+            let mut acc = <$Lhs>::new(10);
+            acc /= rhs;
+            assert_eq!(acc, <$Lhs>::new(3), "{label} /=");
+        }};
+    }
+    for_each_signed_wrapper_x_signed_primitive!(check);
+}
+
+#[test]
+fn div_rem_unsigned_wrapper_to_nonzero_unsigned_primitive() {
+    macro_rules! check {
+        ($Lhs:ident, $rhs:ty) => {{
+            let label = concat!(stringify!($Lhs), " /,% NonZero<", stringify!($rhs), ">");
+            let rhs = NonZero::<$rhs>::new(3 as $rhs).unwrap();
+
+            assert_eq!(<$Lhs>::new(10) / rhs, <$Lhs>::new(3), "{label} div");
+            assert_eq!(<$Lhs>::new(10) % rhs, <$Lhs>::new(1), "{label} rem");
+
+            let mut acc = <$Lhs>::new(10);
+            acc /= rhs;
+            assert_eq!(acc, <$Lhs>::new(3), "{label} /=");
+            let mut acc = <$Lhs>::new(10);
+            acc %= rhs;
+            assert_eq!(acc, <$Lhs>::new(1), "{label} %=");
+        }};
+    }
+    for_each_unsigned_wrapper_x_unsigned_primitive!(check);
 }
 
 // ============================================================================

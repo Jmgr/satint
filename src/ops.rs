@@ -1,8 +1,10 @@
-use core::ops::{
-    Add, AddAssign, Mul, MulAssign, Neg, Shl, ShlAssign, Shr, ShrAssign, Sub, SubAssign,
+use core::{
+    num::NonZero,
+    ops::{
+        Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Rem, RemAssign, Shl, ShlAssign, Shr,
+        ShrAssign, Sub, SubAssign,
+    },
 };
-#[cfg(feature = "panicking-ops")]
-use core::ops::{Div, DivAssign, Rem, RemAssign};
 
 use crate::{
     common::{Inner, SaturatingFrom},
@@ -409,6 +411,24 @@ macro_rules! generate_primitive_to_wrapper_ops {
                 }
             }
 
+            impl Div<NonZero<$rhs>> for $lhs {
+                type Output = $lhs;
+
+                #[inline]
+                fn div(self, rhs: NonZero<$rhs>) -> Self::Output {
+                    let lhs = self.into_inner() as $as_ty;
+                    let rhs = rhs.get() as $as_ty;
+                    Self::saturating_from(lhs.saturating_div(rhs))
+                }
+            }
+
+            impl DivAssign<NonZero<$rhs>> for $lhs {
+                #[inline]
+                fn div_assign(&mut self, rhs: NonZero<$rhs>) {
+                    *self = (*self).div(rhs);
+                }
+            }
+
             #[cfg(feature = "panicking-ops")]
             impl Div<$rhs> for $lhs {
                 type Output = $lhs;
@@ -468,6 +488,30 @@ macro_rules! generate_primitive_to_wrapper_ops {
             impl RemAssign<$rhs> for $lhs {
                 #[inline]
                 fn rem_assign(&mut self, rhs: $rhs) {
+                    *self = (*self).rem(rhs);
+                }
+            }
+        )+
+    };
+}
+
+macro_rules! generate_unsigned_nonzero_rem_ops {
+    ($lhs:ident; $as_ty:ty; $($rhs:ident),+ $(,)?) => {
+        $(
+            impl Rem<NonZero<$rhs>> for $lhs {
+                type Output = $lhs;
+
+                #[inline]
+                fn rem(self, rhs: NonZero<$rhs>) -> Self::Output {
+                    let lhs = self.into_inner() as $as_ty;
+                    let rhs = rhs.get() as $as_ty;
+                    Self::saturating_from(lhs % rhs)
+                }
+            }
+
+            impl RemAssign<NonZero<$rhs>> for $lhs {
+                #[inline]
+                fn rem_assign(&mut self, rhs: NonZero<$rhs>) {
                     *self = (*self).rem(rhs);
                 }
             }
@@ -785,6 +829,7 @@ macro_rules! generate_unsigned_ops {
 
             generate_wrapper_to_wrapper_ops!($name; u128; Su8, Su16, Su32, Su64, Su128, Susize);
             generate_primitive_to_wrapper_ops!($name; u128; u8, u16, u32, u64, u128, usize);
+            generate_unsigned_nonzero_rem_ops!($name; u128; u8, u16, u32, u64, u128, usize);
             generate_wrapper_to_wrapper_unsigned_to_signed!($name; Si8, Si16, Si32, Si64, Si128, Sisize);
             generate_primitive_to_wrapper_unsigned_to_signed!($name; i8, i16, i32, i64, i128, isize);
         )+
